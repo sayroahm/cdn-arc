@@ -5,97 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARC Base — Administration</title>
   <link rel="stylesheet" href="styles.css" />
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc, getDocs, doc, deleteDoc, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-
-    window._addQuestion   = async (testId, data) => addDoc(collection(db, "Concurrent_Tests", testId, "Questions"), { ...data, created_at: serverTimestamp() });
-    window._getQuestions  = async (testId) => { const s = await getDocs(collection(db, "Concurrent_Tests", testId, "Questions")); return s.docs.map(d => ({ id: d.id, ...d.data() })); };
-    window._deleteQuestion= async (testId, qId) => deleteDoc(doc(db, "Concurrent_Tests", testId, "Questions", qId));
-    window._getTests      = async () => { const s = await getDocs(collection(db, "Concurrent_Tests")); return s.docs.map(d => ({ id: d.id, ...d.data() })); };
-    window._addTest       = async (data) => addDoc(collection(db, "Concurrent_Tests"), { ...data, created_at: serverTimestamp() });
+    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    const firebaseConfig = { apiKey:"YOUR_API_KEY", authDomain:"YOUR_PROJECT.firebaseapp.com", projectId:"YOUR_PROJECT_ID", storageBucket:"YOUR_PROJECT.appspot.com", messagingSenderId:"YOUR_SENDER_ID", appId:"YOUR_APP_ID" };
+    const db = getFirestore(initializeApp(firebaseConfig));
+    window._addQuestion    = async (tid,d) => addDoc(collection(db,"Concurrent_Tests",tid,"Questions"),{...d,created_at:serverTimestamp()});
+    window._getQuestions   = async (tid)   => { const s=await getDocs(collection(db,"Concurrent_Tests",tid,"Questions")); return s.docs.map(d=>({id:d.id,...d.data()})); };
+    window._deleteQuestion = async (tid,qid)=> deleteDoc(doc(db,"Concurrent_Tests",tid,"Questions",qid));
+    window._getTests       = async ()      => { const s=await getDocs(collection(db,"Concurrent_Tests")); return s.docs.map(d=>({id:d.id,...d.data()})); };
+    window._addTest        = async (d)     => addDoc(collection(db,"Concurrent_Tests"),{...d,created_at:serverTimestamp()});
+    window._getUsers       = async ()      => { const s=await getDocs(collection(db,"Users")); return s.docs.map(d=>({id:d.id,...d.data()})); };
+    window._addUser        = async (d)     => addDoc(collection(db,"Users"),{...d,created_at:serverTimestamp()});
+    window._deleteUser     = async (uid)   => deleteDoc(doc(db,"Users",uid));
   </script>
-
   <style>
-    .admin-layout { display: flex; min-height: 100vh; padding-top: 54px; }
+    .admin-layout { display: flex; min-height: calc(100vh - 52px); margin-top: 52px; }
 
     /* Sidebar */
     .sidebar {
-      width: 220px;
-      background: var(--bg-secondary);
+      width: 210px;
+      background: #fff;
       border-right: 1px solid var(--border);
-      padding: 20px 0;
       flex-shrink: 0;
       position: sticky;
-      top: 54px;
-      height: calc(100vh - 54px);
+      top: 52px;
+      height: calc(100vh - 52px);
       overflow-y: auto;
       display: flex;
       flex-direction: column;
     }
-    .sidebar-group-label {
-      font-family: var(--font-ui);
+    .sidebar-logo-row {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-logo-row img { height: 20px; }
+    .sidebar-section {
+      padding: 10px 12px 4px;
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--text-muted);
-      padding: 0 16px;
-      margin: 16px 0 6px;
     }
-    .sidebar-group-label:first-child { margin-top: 0; }
     .sidebar-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 9px 16px;
-      cursor: pointer;
-      font-family: var(--font-ui);
+      gap: 9px;
+      padding: 8px 12px;
       font-size: 13px;
       font-weight: 500;
       color: var(--text-secondary);
-      border-left: 2px solid transparent;
+      cursor: pointer;
+      border-left: 3px solid transparent;
     }
-    .sidebar-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
-    .sidebar-item.active { color: var(--text-primary); border-left-color: var(--accent-blue); background: rgba(43,53,224,0.06); }
+    .sidebar-item:hover { background: var(--accent-light); color: var(--accent-btn); }
+    .sidebar-item.active { background: var(--accent-light); color: var(--accent-btn); border-left-color: var(--accent-btn); font-weight: 600; }
     .sidebar-item svg { width: 15px; height: 15px; flex-shrink: 0; }
-
     .sidebar-spacer { flex: 1; }
     .sidebar-user {
-      padding: 14px 16px;
+      padding: 12px;
       border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      background: var(--bg-row-alt);
     }
-    .sidebar-avatar {
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: #fff;
-      flex-shrink: 0;
-    }
-    .sidebar-user-name { font-family: var(--font-ui); font-size: 13px; font-weight: 500; }
-    .sidebar-user-role { font-family: var(--font-ui); font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+    .sidebar-user-name { font-size: 12px; font-weight: 600; }
+    .sidebar-user-role { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
     /* Main */
-    .admin-main { flex: 1; padding: 32px 36px; overflow-y: auto; position: relative; z-index: 1; }
+    .admin-main {
+      flex: 1;
+      padding: 28px 32px;
+      overflow-y: auto;
+      background: var(--bg);
+      position: relative;
+      z-index: 1;
+    }
 
     .panel { display: none; }
     .panel.active { display: block; }
@@ -104,78 +92,83 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      margin-bottom: 28px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--accent-btn);
     }
-    .page-heading h2 { font-size: 1.4rem; }
-    .page-heading .subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 3px; font-family: var(--font-ui); }
+    .page-heading h2 { font-size: 1.2rem; color: var(--accent); }
+    .page-heading .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
-    /* Stats */
-    .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
-    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
-    .stat-label { font-family: var(--font-ui); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 6px; }
-    .stat-value { font-family: var(--font-ui); font-size: 1.6rem; font-weight: 700; }
-    .stat-value.sm { font-size: 13px; padding-top: 6px; }
-
-    /* Builder */
-    .section-label {
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-weight: 600;
+    /* Content card */
+    .content-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .content-card-header {
+      background: var(--bg-row-alt);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--text-muted);
-      margin: 28px 0 16px;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
     }
-    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .content-card-body { padding: 18px; }
 
-    .builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .span-2 { grid-column: 1 / -1; }
-    textarea.form-input { resize: vertical; min-height: 90px; }
+    /* Stat cards */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; border-top: 3px solid var(--accent-btn); }
+    .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+    .stat-value.sm { font-size: 13px; padding-top: 4px; }
+
+    /* Builder form */
+    .builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .span-2 { grid-column: 1/-1; }
 
     .type-tabs {
       display: flex;
-      gap: 4px;
-      background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 4px;
+      overflow: hidden;
       width: fit-content;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .type-tab {
-      font-family: var(--font-ui);
-      font-size: 12px;
-      font-weight: 500;
+      font-size: 12px; font-weight: 600;
       padding: 7px 14px;
-      border-radius: 6px;
       cursor: pointer;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       border: none;
-      background: none;
+      background: #fff;
+      border-right: 1px solid var(--border);
     }
-    .type-tab.active { background: var(--bg-elevated); color: var(--text-primary); }
+    .type-tab:last-child { border-right: none; }
+    .type-tab.active { background: var(--accent-btn); color: #fff; }
 
-    .choices-list { display: flex; flex-direction: column; gap: 8px; }
+    .choices-list { display: flex; flex-direction: column; gap: 7px; }
     .choice-row { display: flex; align-items: center; gap: 8px; }
     .choice-letter {
       width: 26px; height: 26px;
       border-radius: 50%;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-active);
+      background: var(--accent-light);
+      border: 1px solid #bfdbfe;
       display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-ui); font-size: 11px; font-weight: 700; color: var(--text-muted);
+      font-size: 11px; font-weight: 700; color: var(--accent-btn);
       flex-shrink: 0;
     }
     .correct-toggle {
       width: 26px; height: 26px;
       border-radius: 50%;
-      border: 2px solid var(--border-active);
-      background: none;
+      border: 2px solid var(--border-dark);
+      background: #fff;
       cursor: pointer;
       flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
@@ -184,79 +177,47 @@
     .correct-toggle svg { width: 10px; height: 10px; color: #fff; display: none; }
     .correct-toggle.correct svg { display: block; }
 
-    /* Question list */
-    .q-list { display: flex; flex-direction: column; gap: 8px; }
-    .q-row {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-    }
-    .q-num { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); min-width: 22px; padding-top: 2px; }
-    .q-body { flex: 1; }
-    .q-text { font-size: 13px; line-height: 1.6; margin-bottom: 6px; }
-    .q-meta { display: flex; gap: 8px; flex-wrap: wrap; }
-    .q-tag {
-      font-family: var(--font-ui);
-      font-size: 10px;
+    /* Data table */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th {
+      background: var(--bg-row-alt);
+      border-bottom: 2px solid var(--border);
+      padding: 9px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
       color: var(--text-muted);
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 2px 8px;
-      border-radius: 99px;
     }
-    .btn-icon {
-      width: 30px; height: 30px;
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-    .btn-icon:hover { color: var(--danger); border-color: rgba(232,64,64,0.35); background: rgba(232,64,64,0.06); }
-    .btn-icon svg { width: 13px; height: 13px; }
+    .data-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--accent-light); }
 
-    .test-selector-row {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-    .test-selector-row .form-group { min-width: 280px; }
+    /* Selector row */
+    .selector-row { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .selector-row .form-group { min-width: 260px; }
 
     /* Toast */
     .toast {
-      position: fixed;
-      bottom: 28px; right: 28px;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-active);
+      position: fixed; bottom: 24px; right: 24px;
+      background: #1a3a1a;
+      color: #fff;
       border-radius: var(--radius);
-      padding: 12px 18px;
-      font-family: var(--font-ui);
-      font-size: 13px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      display: flex; align-items: center; gap: 10px;
-      transform: translateY(80px);
-      opacity: 0;
+      padding: 10px 16px;
+      font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transform: translateY(80px); opacity: 0;
       z-index: 999;
     }
     .toast.show { transform: translateY(0); opacity: 1; }
-    .toast-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
 
-    .new-test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 640px; }
-    .new-test-grid .span-2 { grid-column: 1/-1; }
+    .empty-note { font-size: 13px; color: var(--text-muted); padding: 12px 0; }
 
-    .empty-state {
-      font-family: var(--font-ui);
-      font-size: 13px;
-      color: var(--text-muted);
-      padding: 16px 0;
-    }
+    /* User form grid */
+    .user-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .user-grid .span-2 { grid-column: 1/-1; }
   </style>
 </head>
 <body>
@@ -267,20 +228,26 @@
   <span class="loader-text">Please wait</span>
 </div>
 
-<header class="topbar">
-  <img src="arcbaseLg.png" alt="ARC Base" class="topbar-logo" />
-  <img src="arcbaseTxt.png" alt="" class="topbar-wordmark" />
-  <div class="topbar-divider"></div>
-  <span class="topbar-title">Administration Panel</span>
-  <div class="topbar-spacer"></div>
-  <span class="topbar-tag" id="adminRoleTag">—</span>
+<header class="site-header">
+  <img src="arcbaseLg.png" alt="" class="site-header-logo" />
+  <img src="arcbaseTxt.png" alt="ARC Base" class="site-header-wordmark" />
+  <div class="site-header-divider"></div>
+  <span class="site-header-title">Administration Panel</span>
+  <div class="site-header-spacer"></div>
+  <span class="site-header-tag" id="adminTag">—</span>
 </header>
 
 <div class="admin-layout">
 
+  <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="sidebar-group-label">Overview</div>
-    <div class="sidebar-item active" onclick="switchPanel('dashboard', this)">
+    <div class="sidebar-logo-row">
+      <img src="arcbaseLg.png" alt="" />
+      <span style="font-size:12px; font-weight:700; color:var(--accent);">ARC Base</span>
+    </div>
+
+    <div class="sidebar-section">Overview</div>
+    <div class="sidebar-item active" onclick="nav('dashboard',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
         <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
@@ -288,8 +255,15 @@
       Dashboard
     </div>
 
-    <div class="sidebar-group-label">Assessments</div>
-    <div class="sidebar-item" onclick="switchPanel('questions', this)">
+    <div class="sidebar-section">Assessments</div>
+    <div class="sidebar-item" onclick="nav('tests',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      Manage Tests
+    </div>
+    <div class="sidebar-item" onclick="nav('questions',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
         <rect x="9" y="3" width="6" height="4" rx="1"/>
@@ -297,16 +271,29 @@
       </svg>
       Question Builder
     </div>
-    <div class="sidebar-item" onclick="switchPanel('tests', this)">
+
+    <div class="sidebar-section">Users</div>
+    <div class="sidebar-item" onclick="nav('users',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+        <path d="M16 3.13a4 4 0 010 7.75"/>
       </svg>
-      Manage Tests
+      Manage Users
+    </div>
+    <div class="sidebar-item" onclick="nav('createuser',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <line x1="19" y1="8" x2="19" y2="14"/>
+        <line x1="16" y1="11" x2="22" y2="11"/>
+      </svg>
+      Create User
     </div>
 
-    <div class="sidebar-group-label">Account</div>
-    <div class="sidebar-item" onclick="signOut()">
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-item" onclick="signOut()" style="color:var(--danger); border-top:1px solid var(--border); margin-top:4px;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
         <polyline points="16 17 21 12 16 7"/>
@@ -314,57 +301,67 @@
       </svg>
       Sign Out
     </div>
-
-    <div class="sidebar-spacer"></div>
     <div class="sidebar-user">
-      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
-      <div>
-        <div class="sidebar-user-name" id="sidebarName">—</div>
-        <div class="sidebar-user-role" id="sidebarRole">—</div>
-      </div>
+      <div class="sidebar-user-name" id="sidebarName">—</div>
+      <div class="sidebar-user-role" id="sidebarRole">—</div>
     </div>
   </aside>
 
+  <!-- Main content -->
   <main class="admin-main">
 
     <!-- Dashboard -->
     <div class="panel active" id="panel-dashboard">
       <div class="page-heading">
-        <div>
-          <h2>Dashboard</h2>
-          <p class="subtitle">Platform overview</p>
-        </div>
-        <span class="badge badge-active">Online</span>
+        <div><h2>Dashboard</h2><p class="subtitle">Platform overview and quick access</p></div>
+        <span class="badge badge-green">System Online</span>
       </div>
-
       <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-label">Active Tests</div>
-          <div class="stat-value" id="statTests">—</div>
+        <div class="stat-card"><div class="stat-label">Active Tests</div><div class="stat-value" id="statTests">—</div></div>
+        <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="statUsers">—</div></div>
+        <div class="stat-card"><div class="stat-label">Signed In As</div><div class="stat-value sm" id="statAdmin">—</div></div>
+        <div class="stat-card"><div class="stat-label">Role</div><div class="stat-value sm" id="statRole">—</div></div>
+      </div>
+      <div class="content-card" style="max-width:480px;">
+        <div class="content-card-header">Quick Actions</div>
+        <div class="content-card-body" style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn btn-secondary w-full" style="justify-content:flex-start;" onclick="nav('createuser', document.querySelectorAll('.sidebar-item')[5])">Create New User Account</button>
+          <button class="btn btn-secondary w-full" style="justify-content:flex-start;" onclick="nav('tests', document.querySelectorAll('.sidebar-item')[2])">Create New Assessment</button>
+          <button class="btn btn-secondary w-full" style="justify-content:flex-start;" onclick="nav('questions', document.querySelectorAll('.sidebar-item')[3])">Add Questions to a Test</button>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">Signed In As</div>
-          <div class="stat-value sm" id="statAdmin">—</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Session Start</div>
-          <div class="stat-value sm" id="statSession">—</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Role</div>
-          <div class="stat-value sm" id="statRole">—</div>
+      </div>
+    </div>
+
+    <!-- Manage Tests -->
+    <div class="panel" id="panel-tests">
+      <div class="page-heading">
+        <div><h2>Manage Tests</h2><p class="subtitle">Create and view concurrent assessments</p></div>
+      </div>
+      <div class="content-card" style="max-width:640px;">
+        <div class="content-card-header">New Assessment</div>
+        <div class="content-card-body">
+          <div class="builder-grid">
+            <div class="form-group span-2"><label class="form-label">Assessment Name</label><input class="form-input" type="text" id="newTestName" placeholder="e.g. Unit 3 Algebra Assessment" /></div>
+            <div class="form-group"><label class="form-label">Subject</label><input class="form-input" type="text" id="newTestSubject" placeholder="e.g. Mathematics" /></div>
+            <div class="form-group"><label class="form-label">Grade Level</label><input class="form-input" type="text" id="newTestGrade" placeholder="e.g. Grade 8" /></div>
+            <div class="form-group"><label class="form-label">Duration (minutes)</label><input class="form-input" type="number" id="newTestDuration" placeholder="60" min="1" /></div>
+            <div class="form-group"><label class="form-label">Maximum Points</label><input class="form-input" type="number" id="newTestPoints" placeholder="100" min="1" /></div>
+            <div class="form-group span-2"><label class="form-label">Description</label><input class="form-input" type="text" id="newTestDesc" placeholder="Brief description..." /></div>
+          </div>
+          <div style="margin-top:14px; display:flex; gap:10px; align-items:center;">
+            <button class="btn btn-primary" onclick="createTest()">Create Assessment</button>
+            <span id="testCreateStatus" style="font-size:12px; color:var(--text-muted);"></span>
+          </div>
         </div>
       </div>
 
-      <div class="card" style="max-width:520px;">
-        <h4 style="margin-bottom:14px; font-family:var(--font-ui);">Quick Actions</h4>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="switchPanel('questions', document.querySelectorAll('.sidebar-item')[2])">
-            Add Questions to a Test
-          </button>
-          <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="switchPanel('tests', document.querySelectorAll('.sidebar-item')[3])">
-            Create a New Assessment
-          </button>
+      <div class="content-card">
+        <div class="content-card-header">Active Assessments</div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="testsTable">
+            <thead><tr><th>Name</th><th>Subject</th><th>Grade</th><th>Duration</th><th>ID</th></tr></thead>
+            <tbody id="testsTableBody"><tr><td colspan="5" style="color:var(--text-muted); font-size:13px;">Loading...</td></tr></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -372,402 +369,360 @@
     <!-- Question Builder -->
     <div class="panel" id="panel-questions">
       <div class="page-heading">
-        <div>
-          <h2>Question Builder</h2>
-          <p class="subtitle">Author and manage test questions</p>
-        </div>
+        <div><h2>Question Builder</h2><p class="subtitle">Author and manage test questions</p></div>
       </div>
 
-      <div class="test-selector-row">
+      <div class="selector-row">
         <div class="form-group">
           <label class="form-label">Assessment</label>
           <select class="form-input" id="qTestSelect" onchange="loadQuestions()">
             <option value="">Select an assessment...</option>
           </select>
         </div>
-        <button class="btn btn-ghost" onclick="loadQuestions()" id="refreshBtn">Refresh</button>
+        <button class="btn btn-secondary" onclick="loadQuestions()">Refresh</button>
       </div>
 
       <div class="type-tabs">
-        <button class="type-tab active" onclick="setQType('multiple_choice', this)">Multiple Choice</button>
-        <button class="type-tab" onclick="setQType('short_answer', this)">Short Answer</button>
-        <button class="type-tab" onclick="setQType('true_false', this)">True / False</button>
-        <button class="type-tab" onclick="setQType('essay', this)">Essay</button>
+        <button class="type-tab active" onclick="setQType('multiple_choice',this)">Multiple Choice</button>
+        <button class="type-tab" onclick="setQType('short_answer',this)">Short Answer</button>
+        <button class="type-tab" onclick="setQType('true_false',this)">True / False</button>
+        <button class="type-tab" onclick="setQType('essay',this)">Essay</button>
       </div>
 
-      <div class="card" style="max-width:760px;">
-        <h4 style="font-family:var(--font-ui); margin-bottom:18px;">New Question</h4>
+      <div class="content-card" style="max-width:760px;">
+        <div class="content-card-header">New Question</div>
+        <div class="content-card-body">
+          <div class="builder-grid">
+            <div class="form-group span-2"><label class="form-label">Question Text</label><textarea class="form-input" id="qText" placeholder="Enter the question..."></textarea></div>
+            <div class="form-group"><label class="form-label">Standard</label><input class="form-input" type="text" id="qStandard" placeholder="e.g. CCSS.MATH.7.RP.A.1" /></div>
+            <div class="form-group"><label class="form-label">Difficulty</label><select class="form-input" id="qDifficulty"><option value="basic">Basic</option><option value="intermediate" selected>Intermediate</option><option value="advanced">Advanced</option><option value="critical">Critical Thinking</option></select></div>
+            <div class="form-group"><label class="form-label">Points</label><input class="form-input" type="number" id="qPoints" value="1" min="1" /></div>
+            <div class="form-group"><label class="form-label">Time Limit (sec, 0 = none)</label><input class="form-input" type="number" id="qTimeLimit" value="0" min="0" /></div>
 
-        <div class="builder-grid">
-          <div class="form-group span-2">
-            <label class="form-label">Question Text</label>
-            <textarea class="form-input" id="qText" placeholder="Enter the question..."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Standard</label>
-            <input class="form-input" type="text" id="qStandard" placeholder="e.g. CCSS.MATH.7.RP.A.1" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Difficulty</label>
-            <select class="form-input" id="qDifficulty">
-              <option value="basic">Basic</option>
-              <option value="intermediate" selected>Intermediate</option>
-              <option value="advanced">Advanced</option>
-              <option value="critical">Critical Thinking</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Points</label>
-            <input class="form-input" type="number" id="qPoints" value="1" min="1" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Time Limit (sec, 0 = none)</label>
-            <input class="form-input" type="number" id="qTimeLimit" value="0" min="0" />
-          </div>
-
-          <!-- Multiple choice -->
-          <div class="form-group span-2" id="choicesSection">
-            <label class="form-label">Answer Choices — Click circle to mark correct</label>
-            <div class="choices-list">
-              <div class="choice-row">
-                <div class="choice-letter">A</div>
-                <input class="form-input" type="text" id="choiceInputA" placeholder="Choice A" />
-                <button class="correct-toggle" onclick="setCorrect('A', this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button>
-              </div>
-              <div class="choice-row">
-                <div class="choice-letter">B</div>
-                <input class="form-input" type="text" id="choiceInputB" placeholder="Choice B" />
-                <button class="correct-toggle" onclick="setCorrect('B', this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button>
-              </div>
-              <div class="choice-row">
-                <div class="choice-letter">C</div>
-                <input class="form-input" type="text" id="choiceInputC" placeholder="Choice C" />
-                <button class="correct-toggle" onclick="setCorrect('C', this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button>
-              </div>
-              <div class="choice-row">
-                <div class="choice-letter">D</div>
-                <input class="form-input" type="text" id="choiceInputD" placeholder="Choice D" />
-                <button class="correct-toggle" onclick="setCorrect('D', this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button>
+            <div class="form-group span-2" id="choicesSection">
+              <label class="form-label">Answer Choices — Click circle to mark correct answer</label>
+              <div class="choices-list">
+                <div class="choice-row"><div class="choice-letter">A</div><input class="form-input" type="text" id="ciA" placeholder="Choice A" /><button class="correct-toggle" onclick="setCorrect('A',this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button></div>
+                <div class="choice-row"><div class="choice-letter">B</div><input class="form-input" type="text" id="ciB" placeholder="Choice B" /><button class="correct-toggle" onclick="setCorrect('B',this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button></div>
+                <div class="choice-row"><div class="choice-letter">C</div><input class="form-input" type="text" id="ciC" placeholder="Choice C" /><button class="correct-toggle" onclick="setCorrect('C',this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button></div>
+                <div class="choice-row"><div class="choice-letter">D</div><input class="form-input" type="text" id="ciD" placeholder="Choice D" /><button class="correct-toggle" onclick="setCorrect('D',this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button></div>
               </div>
             </div>
-          </div>
 
-          <!-- Short answer / essay -->
-          <div class="form-group span-2" id="answerSection" style="display:none;">
-            <label class="form-label">Expected Answer / Rubric Key</label>
-            <textarea class="form-input" id="qAnswer" placeholder="Rubric or correct answer..." style="min-height:70px;"></textarea>
-          </div>
-
-          <!-- True / False -->
-          <div class="form-group span-2" id="tfSection" style="display:none;">
-            <label class="form-label">Correct Answer</label>
-            <div style="display:flex; gap:8px;">
-              <button class="btn btn-ghost" id="tfTrue" onclick="selectTF('true')">True</button>
-              <button class="btn btn-ghost" id="tfFalse" onclick="selectTF('false')">False</button>
+            <div class="form-group span-2" id="answerSection" style="display:none;"><label class="form-label">Expected Answer / Rubric Key</label><textarea class="form-input" id="qAnswer" placeholder="Expected answer or rubric..."></textarea></div>
+            <div class="form-group span-2" id="tfSection" style="display:none;">
+              <label class="form-label">Correct Answer</label>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-secondary" id="tfTrue" onclick="selectTF('true')">True</button>
+                <button class="btn btn-secondary" id="tfFalse" onclick="selectTF('false')">False</button>
+              </div>
             </div>
-          </div>
 
-          <div class="form-group span-2">
-            <label class="form-label">Feedback (shown after submission)</label>
-            <input class="form-input" type="text" id="qFeedback" placeholder="Optional: explain the correct answer..." />
+            <div class="form-group span-2"><label class="form-label">Feedback (shown after submission)</label><input class="form-input" type="text" id="qFeedback" placeholder="Optional explanation of correct answer..." /></div>
           </div>
-        </div>
-
-        <div style="margin-top:20px; display:flex; gap:10px; align-items:center;">
-          <button class="btn btn-primary" onclick="submitQuestion()" id="submitQBtn">Add Question</button>
-          <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
-          <span id="submitStatus" style="font-family:var(--font-ui); font-size:12px; color:var(--text-muted);"></span>
+          <div style="margin-top:14px; display:flex; gap:10px; align-items:center;">
+            <button class="btn btn-primary" id="submitQBtn" onclick="submitQuestion()">Add Question</button>
+            <button class="btn btn-secondary" onclick="clearQForm()">Clear</button>
+            <span id="qStatus" style="font-size:12px; color:var(--text-muted);"></span>
+          </div>
         </div>
       </div>
 
-      <div class="section-label">Existing Questions</div>
-      <div class="q-list" id="questionsList">
-        <p class="empty-state">Select an assessment to view its questions.</p>
+      <div class="content-card">
+        <div class="content-card-header">Questions in Selected Assessment</div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Question</th><th>Type</th><th>Difficulty</th><th>Points</th><th></th></tr></thead>
+            <tbody id="questionsTableBody"><tr><td colspan="6" style="color:var(--text-muted); font-size:13px;">Select an assessment above.</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- Manage Tests -->
-    <div class="panel" id="panel-tests">
+    <!-- Manage Users -->
+    <div class="panel" id="panel-users">
       <div class="page-heading">
-        <div>
-          <h2>Manage Tests</h2>
-          <p class="subtitle">Create and manage concurrent assessments</p>
+        <div><h2>Manage Users</h2><p class="subtitle">View and remove platform accounts</p></div>
+        <button class="btn btn-primary btn-sm" onclick="nav('createuser', document.querySelectorAll('.sidebar-item')[5])">Create New User</button>
+      </div>
+      <div class="content-card">
+        <div class="content-card-header">
+          All Users
+          <input class="form-input" type="text" id="userSearch" placeholder="Search by name, Base ID, or role..." oninput="filterUsers()" style="width:240px; font-size:12px; padding:5px 10px;" />
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Base ID</th><th>Role</th><th>Organization</th><th>Grade</th><th></th></tr></thead>
+            <tbody id="usersTableBody"><tr><td colspan="6" style="color:var(--text-muted); font-size:13px;">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create User -->
+    <div class="panel" id="panel-createuser">
+      <div class="page-heading">
+        <div><h2>Create User</h2><p class="subtitle">Add a new account to the platform</p></div>
+      </div>
+      <div class="content-card" style="max-width:600px;">
+        <div class="content-card-header">New User Account</div>
+        <div class="content-card-body">
+          <div class="user-grid">
+            <div class="form-group"><label class="form-label">First Name</label><input class="form-input" type="text" id="nuFirst" placeholder="First name" /></div>
+            <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" type="text" id="nuLast" placeholder="Last name" /></div>
+            <div class="form-group"><label class="form-label">Base ID</label><input class="form-input" type="text" id="nuBaseId" placeholder="e.g. STU-00123" autocomplete="off" spellcheck="false" /></div>
+            <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="text" id="nuPassword" placeholder="Assign a password" autocomplete="off" /></div>
+            <div class="form-group"><label class="form-label">Role</label>
+              <select class="form-input" id="nuRole">
+                <option value="student">Student</option>
+                <option value="grader">Grader</option>
+                <option value="productor">Productor</option>
+                <option value="administrator">Administrator</option>
+                <option value="central">Central</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Grade / Level</label><input class="form-input" type="text" id="nuGrade" placeholder="e.g. Grade 8" /></div>
+            <div class="form-group span-2"><label class="form-label">Organization / School</label><input class="form-input" type="text" id="nuOrg" placeholder="Organization or school name" /></div>
+          </div>
+          <div id="nuError" class="alert alert-danger mt-12" style="display:none;"><span id="nuErrorMsg">—</span></div>
+          <div id="nuSuccess" class="alert alert-success mt-12" style="display:none;">User created successfully.</div>
+          <div style="margin-top:14px; display:flex; gap:10px; align-items:center;">
+            <button class="btn btn-primary" id="nuBtn" onclick="createUser()">Create User</button>
+            <button class="btn btn-secondary" onclick="clearUserForm()">Clear</button>
+          </div>
         </div>
       </div>
 
-      <div class="card" style="max-width:660px; margin-bottom:28px;">
-        <h4 style="font-family:var(--font-ui); margin-bottom:18px;">New Assessment</h4>
-        <div class="new-test-grid">
-          <div class="form-group span-2">
-            <label class="form-label">Assessment Name</label>
-            <input class="form-input" type="text" id="newTestName" placeholder="e.g. Unit 3 Algebra Assessment" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Subject</label>
-            <input class="form-input" type="text" id="newTestSubject" placeholder="e.g. Mathematics" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Grade Level</label>
-            <input class="form-input" type="text" id="newTestGrade" placeholder="e.g. Grade 8" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Duration (minutes)</label>
-            <input class="form-input" type="number" id="newTestDuration" placeholder="60" min="1" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Maximum Points</label>
-            <input class="form-input" type="number" id="newTestPoints" placeholder="100" min="1" />
-          </div>
-          <div class="form-group span-2">
-            <label class="form-label">Description</label>
-            <input class="form-input" type="text" id="newTestDesc" placeholder="Brief description..." />
-          </div>
+      <div class="content-card" style="max-width:600px;">
+        <div class="content-card-header">Field Reference</div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Field</th><th>Description</th><th>Required</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Base ID</strong></td><td>Unique identifier the user types to sign in</td><td>Yes</td></tr>
+              <tr><td><strong>Password</strong></td><td>Password the user types to sign in</td><td>Yes</td></tr>
+              <tr><td><strong>Role</strong></td><td>student, grader, productor, administrator, central</td><td>Yes</td></tr>
+              <tr><td><strong>First / Last Name</strong></td><td>Display name shown after sign-in</td><td>No</td></tr>
+              <tr><td><strong>Organization</strong></td><td>School or organization name</td><td>No</td></tr>
+              <tr><td><strong>Grade / Level</strong></td><td>Grade level or classification</td><td>No</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div style="margin-top:18px; display:flex; gap:10px; align-items:center;">
-          <button class="btn btn-primary" onclick="createTest()">Create Assessment</button>
-          <span id="testCreateStatus" style="font-family:var(--font-ui); font-size:12px; color:var(--text-muted);"></span>
-        </div>
-      </div>
-
-      <div class="section-label">Active Assessments</div>
-      <div class="q-list" id="testsList">
-        <p class="empty-state">Loading...</p>
       </div>
     </div>
 
   </main>
 </div>
 
-<div class="toast" id="toast">
-  <div class="toast-dot"></div>
-  <span id="toastMsg">Saved.</span>
-</div>
+<div class="toast" id="toast"><span id="toastMsg">Saved.</span></div>
 
 <script>
   const user = JSON.parse(sessionStorage.getItem('arc_user') || 'null');
-  if (!user || (user.role !== 'administrator' && user.role !== 'central')) {
-    window.location.href = 'index.html';
+  if (!user || (user.role !== 'administrator' && user.role !== 'central')) window.location.href = 'index.html';
+
+  window.addEventListener('load', () => setTimeout(() => { document.getElementById('arc-loader').classList.add('hidden'); init(); }, 1200));
+
+  function init() {
+    const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.base_id;
+    document.getElementById('sidebarName').textContent = name;
+    document.getElementById('sidebarRole').textContent = user.role;
+    document.getElementById('adminTag').textContent    = user.base_id + ' — ' + user.role.toUpperCase();
+    document.getElementById('statAdmin').textContent   = name;
+    document.getElementById('statRole').textContent    = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+    loadAllData();
   }
 
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      document.getElementById('arc-loader').classList.add('hidden');
-      initPage();
-    }, 1400);
-  });
-
-  function initPage() {
-    const initials = ((user.first_name || '')[0] || '') + ((user.last_name || '')[0] || '') || '?';
-    const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.base_id;
-
-    document.getElementById('sidebarAvatar').textContent = initials.toUpperCase();
-    document.getElementById('sidebarName').textContent   = fullName;
-    document.getElementById('sidebarRole').textContent   = user.role;
-    document.getElementById('adminRoleTag').textContent  = user.role.toUpperCase() + ' — ' + (user.base_id || '—');
-    document.getElementById('statAdmin').textContent     = fullName;
-    document.getElementById('statSession').textContent   = new Date().toLocaleTimeString();
-    document.getElementById('statRole').textContent      = user.role.charAt(0).toUpperCase() + user.role.slice(1);
-
-    loadAllTests();
-  }
-
-  function switchPanel(id, el) {
+  function nav(id, el) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');
     if (el) el.classList.add('active');
   }
 
-  let currentQType = 'multiple_choice';
-  let correctAnswer = null;
+  // ── Load all data ──
+  let allUsers = [];
+  async function loadAllData() {
+    const [tests, users] = await Promise.all([
+      window._getTests().catch(() => []),
+      window._getUsers().catch(() => [])
+    ]);
+    allUsers = users;
+    document.getElementById('statTests').textContent = tests.length;
+    document.getElementById('statUsers').textContent = users.length;
+
+    // Tests table
+    const testsSel = document.getElementById('qTestSelect');
+    testsSel.innerHTML = '<option value="">Select an assessment...</option>';
+    const tbody = document.getElementById('testsTableBody');
+    if (!tests.length) { tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);font-size:13px;">No assessments found.</td></tr>'; }
+    else {
+      tbody.innerHTML = '';
+      tests.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><strong>${t.name||t.id}</strong></td><td>${t.subject||'—'}</td><td>${t.grade||'—'}</td><td>${t.duration_minutes?t.duration_minutes+' min':'—'}</td><td style="font-family:monospace;font-size:11px;">${t.id}</td>`;
+        tbody.appendChild(tr);
+        const o = document.createElement('option'); o.value=t.id; o.textContent=(t.name||t.id)+(t.subject?' — '+t.subject:''); testsSel.appendChild(o);
+      });
+    }
+
+    // Users table
+    renderUsersTable(users);
+  }
+
+  function renderUsersTable(users) {
+    const tbody = document.getElementById('usersTableBody');
+    if (!users.length) { tbody.innerHTML='<tr><td colspan="6" style="color:var(--text-muted);font-size:13px;">No users found.</td></tr>'; return; }
+    tbody.innerHTML = '';
+    users.forEach(u => {
+      const tr = document.createElement('tr');
+      const name = [u.first_name,u.last_name].filter(Boolean).join(' ')||'—';
+      const roleColors = {student:'badge-blue',grader:'badge-gray',productor:'badge-gray',administrator:'badge-blue',central:'badge-red'};
+      tr.innerHTML = `<td>${name}</td><td style="font-family:monospace;font-size:12px;">${u.base_id||'—'}</td><td><span class="badge ${roleColors[u.role]||'badge-gray'}">${u.role||'—'}</span></td><td>${u.organization||u.school||'—'}</td><td>${u.grade||'—'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${name}')">Remove</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function filterUsers() {
+    const q = document.getElementById('userSearch').value.toLowerCase();
+    const filtered = allUsers.filter(u => {
+      const name = [u.first_name,u.last_name].filter(Boolean).join(' ').toLowerCase();
+      return name.includes(q) || (u.base_id||'').toLowerCase().includes(q) || (u.role||'').toLowerCase().includes(q) || (u.organization||'').toLowerCase().includes(q);
+    });
+    renderUsersTable(filtered);
+  }
+
+  async function deleteUser(uid, name) {
+    if (!confirm('Remove user "' + name + '"? This cannot be undone.')) return;
+    await window._deleteUser(uid);
+    toast('User removed.');
+    loadAllData();
+  }
+
+  // ── Create user ──
+  async function createUser() {
+    const baseId = document.getElementById('nuBaseId').value.trim();
+    const pw     = document.getElementById('nuPassword').value.trim();
+    const role   = document.getElementById('nuRole').value;
+    const errEl  = document.getElementById('nuError');
+    const sucEl  = document.getElementById('nuSuccess');
+    const btn    = document.getElementById('nuBtn');
+    errEl.style.display='none'; sucEl.style.display='none';
+    if (!baseId) { document.getElementById('nuErrorMsg').textContent='Base ID is required.'; errEl.style.display='flex'; return; }
+    if (!pw)     { document.getElementById('nuErrorMsg').textContent='Password is required.'; errEl.style.display='flex'; return; }
+    btn.classList.add('btn-loading'); btn.disabled=true;
+    try {
+      await window._addUser({
+        base_id:      baseId,
+        password:     pw,
+        role,
+        first_name:   document.getElementById('nuFirst').value.trim(),
+        last_name:    document.getElementById('nuLast').value.trim(),
+        grade:        document.getElementById('nuGrade').value.trim(),
+        organization: document.getElementById('nuOrg').value.trim()
+      });
+      sucEl.style.display='flex';
+      toast('User created successfully.');
+      clearUserForm();
+      loadAllData();
+    } catch(e) { document.getElementById('nuErrorMsg').textContent='Error: '+e.message; errEl.style.display='flex'; }
+    btn.classList.remove('btn-loading'); btn.disabled=false;
+  }
+
+  function clearUserForm() {
+    ['nuFirst','nuLast','nuBaseId','nuPassword','nuGrade','nuOrg'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('nuRole').value='student';
+    document.getElementById('nuError').style.display='none';
+    document.getElementById('nuSuccess').style.display='none';
+  }
+
+  // ── Question builder ──
+  let qType = 'multiple_choice', correctAnswer = null, tfAnswer = null;
 
   function setQType(type, btn) {
-    currentQType = type; correctAnswer = null;
-    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('choicesSection').style.display = (type === 'multiple_choice') ? 'flex' : 'none';
-    document.getElementById('answerSection').style.display  = (type === 'short_answer' || type === 'essay') ? 'flex' : 'none';
-    document.getElementById('tfSection').style.display      = (type === 'true_false') ? 'flex' : 'none';
+    qType=type; correctAnswer=null; tfAnswer=null;
+    document.querySelectorAll('.type-tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
+    document.getElementById('choicesSection').style.display = type==='multiple_choice'?'flex':'none';
+    document.getElementById('answerSection').style.display  = (type==='short_answer'||type==='essay')?'flex':'none';
+    document.getElementById('tfSection').style.display      = type==='true_false'?'flex':'none';
   }
 
   function setCorrect(letter, btn) {
-    document.querySelectorAll('.correct-toggle').forEach(t => t.classList.remove('correct'));
-    btn.classList.add('correct'); correctAnswer = letter;
+    document.querySelectorAll('.correct-toggle').forEach(t=>t.classList.remove('correct'));
+    btn.classList.add('correct'); correctAnswer=letter;
   }
 
-  let tfAnswer = null;
   function selectTF(val) {
-    tfAnswer = val;
-    document.getElementById('tfTrue').style.background  = val === 'true'  ? 'rgba(34,201,120,0.12)' : '';
-    document.getElementById('tfFalse').style.background = val === 'false' ? 'rgba(232,64,64,0.12)'  : '';
+    tfAnswer=val;
+    document.getElementById('tfTrue').style.background  = val==='true'  ? '#dcfce7':'';
+    document.getElementById('tfFalse').style.background = val==='false' ? '#fef2f2':'';
   }
 
   async function submitQuestion() {
     const testId = document.getElementById('qTestSelect').value;
-    const qText  = document.getElementById('qText').value.trim();
-    const status = document.getElementById('submitStatus');
-    if (!testId) { status.textContent = 'Select an assessment first.'; return; }
-    if (!qText)  { status.textContent = 'Question text is required.'; return; }
-
+    const text   = document.getElementById('qText').value.trim();
+    const stat   = document.getElementById('qStatus');
+    if (!testId) { stat.textContent='Select an assessment first.'; return; }
+    if (!text)   { stat.textContent='Question text is required.'; return; }
     const btn = document.getElementById('submitQBtn');
-    btn.classList.add('btn-loading'); btn.disabled = true;
-    status.textContent = '';
-
-    const data = {
-      type: currentQType,
-      text: qText,
-      standard:   document.getElementById('qStandard').value.trim(),
-      difficulty: document.getElementById('qDifficulty').value,
-      points:     parseInt(document.getElementById('qPoints').value) || 1,
-      time_limit: parseInt(document.getElementById('qTimeLimit').value) || 0,
-      feedback:   document.getElementById('qFeedback').value.trim()
-    };
-
-    if (currentQType === 'multiple_choice') {
-      data.choices = { A: document.getElementById('choiceInputA').value.trim(), B: document.getElementById('choiceInputB').value.trim(), C: document.getElementById('choiceInputC').value.trim(), D: document.getElementById('choiceInputD').value.trim() };
-      data.correct_answer = correctAnswer;
-    } else if (currentQType === 'true_false') {
-      data.correct_answer = tfAnswer;
-    } else {
-      data.answer_key = document.getElementById('qAnswer').value.trim();
-    }
-
-    try {
-      await window._addQuestion(testId, data);
-      toast('Question saved.');
-      clearForm();
-      loadQuestions();
-    } catch(e) {
-      status.textContent = 'Error: ' + e.message;
-    }
-    btn.classList.remove('btn-loading'); btn.disabled = false;
+    btn.classList.add('btn-loading'); btn.disabled=true; stat.textContent='';
+    const data = { type:qType, text, standard:document.getElementById('qStandard').value.trim(), difficulty:document.getElementById('qDifficulty').value, points:parseInt(document.getElementById('qPoints').value)||1, time_limit:parseInt(document.getElementById('qTimeLimit').value)||0, feedback:document.getElementById('qFeedback').value.trim() };
+    if (qType==='multiple_choice') { data.choices={A:document.getElementById('ciA').value.trim(),B:document.getElementById('ciB').value.trim(),C:document.getElementById('ciC').value.trim(),D:document.getElementById('ciD').value.trim()}; data.correct_answer=correctAnswer; }
+    else if (qType==='true_false') { data.correct_answer=tfAnswer; }
+    else { data.answer_key=document.getElementById('qAnswer').value.trim(); }
+    try { await window._addQuestion(testId,data); toast('Question saved.'); clearQForm(); loadQuestions(); }
+    catch(e) { stat.textContent='Error: '+e.message; }
+    btn.classList.remove('btn-loading'); btn.disabled=false;
   }
 
-  function clearForm() {
-    document.getElementById('qText').value = '';
-    document.getElementById('qStandard').value = '';
-    document.getElementById('qFeedback').value = '';
-    document.getElementById('qPoints').value = '1';
-    document.getElementById('qTimeLimit').value = '0';
-    document.getElementById('qAnswer').value = '';
-    ['A','B','C','D'].forEach(l => document.getElementById('choiceInput' + l).value = '');
-    document.querySelectorAll('.correct-toggle').forEach(t => t.classList.remove('correct'));
-    correctAnswer = null; tfAnswer = null;
-    document.getElementById('submitStatus').textContent = '';
-  }
-
-  async function loadAllTests() {
-    const tests = await window._getTests().catch(() => []);
-    document.getElementById('statTests').textContent = tests.length;
-
-    const sel = document.getElementById('qTestSelect');
-    sel.innerHTML = '<option value="">Select an assessment...</option>';
-    tests.forEach(t => {
-      const o = document.createElement('option');
-      o.value = t.id;
-      o.textContent = (t.name || t.id) + (t.subject ? ' — ' + t.subject : '');
-      sel.appendChild(o);
-    });
-
-    const listEl = document.getElementById('testsList');
-    if (!tests.length) { listEl.innerHTML = '<p class="empty-state">No assessments found.</p>'; return; }
-    listEl.innerHTML = '';
-    tests.forEach(t => {
-      const row = document.createElement('div');
-      row.className = 'q-row';
-      row.innerHTML = `
-        <div class="q-body">
-          <div class="q-text" style="font-weight:600; font-family:var(--font-ui);">${t.name || t.id}</div>
-          <div class="q-meta">
-            ${t.subject ? '<span class="q-tag">' + t.subject + '</span>' : ''}
-            ${t.grade ? '<span class="q-tag">' + t.grade + '</span>' : ''}
-            ${t.duration_minutes ? '<span class="q-tag">' + t.duration_minutes + ' min</span>' : ''}
-            <span class="q-tag">ID: ${t.id}</span>
-          </div>
-        </div>`;
-      listEl.appendChild(row);
-    });
+  function clearQForm() {
+    document.getElementById('qText').value=''; document.getElementById('qStandard').value=''; document.getElementById('qFeedback').value='';
+    document.getElementById('qPoints').value='1'; document.getElementById('qTimeLimit').value='0'; document.getElementById('qAnswer').value='';
+    ['ciA','ciB','ciC','ciD'].forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('.correct-toggle').forEach(t=>t.classList.remove('correct'));
+    correctAnswer=null; tfAnswer=null; document.getElementById('qStatus').textContent='';
   }
 
   async function loadQuestions() {
     const testId = document.getElementById('qTestSelect').value;
-    const listEl = document.getElementById('questionsList');
-    if (!testId) { listEl.innerHTML = '<p class="empty-state">Select an assessment to view questions.</p>'; return; }
-
-    listEl.innerHTML = '<p class="empty-state">Loading...</p>';
+    const tbody  = document.getElementById('questionsTableBody');
+    if (!testId) { tbody.innerHTML='<tr><td colspan="6" style="color:var(--text-muted);font-size:13px;">Select an assessment above.</td></tr>'; return; }
+    tbody.innerHTML='<tr><td colspan="6" style="color:var(--text-muted);font-size:13px;">Loading...</td></tr>';
     try {
       const qs = await window._getQuestions(testId);
-      if (!qs.length) { listEl.innerHTML = '<p class="empty-state">No questions yet for this assessment.</p>'; return; }
-      listEl.innerHTML = '';
-      qs.forEach((q, i) => {
-        const row = document.createElement('div');
-        row.className = 'q-row';
-        row.innerHTML = `
-          <div class="q-num">${String(i+1).padStart(2,'0')}</div>
-          <div class="q-body">
-            <div class="q-text">${q.text}</div>
-            <div class="q-meta">
-              <span class="q-tag">${(q.type || '').replace('_',' ')}</span>
-              <span class="q-tag">${q.points || 1} pts</span>
-              ${q.difficulty ? '<span class="q-tag">' + q.difficulty + '</span>' : ''}
-              ${q.standard ? '<span class="q-tag">' + q.standard + '</span>' : ''}
-            </div>
-          </div>
-          <button class="btn-icon" onclick="deleteQuestion('${testId}','${q.id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14H6L5 6"/>
-            </svg>
-          </button>`;
-        listEl.appendChild(row);
+      if (!qs.length) { tbody.innerHTML='<tr><td colspan="6" style="color:var(--text-muted);font-size:13px;">No questions yet.</td></tr>'; return; }
+      tbody.innerHTML='';
+      qs.forEach((q,i) => {
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${i+1}</td><td>${q.text}</td><td>${(q.type||'').replace('_',' ')}</td><td>${q.difficulty||'—'}</td><td>${q.points||1}</td><td><button class="btn btn-danger btn-sm" onclick="deleteQ('${testId}','${q.id}')">Delete</button></td>`;
+        tbody.appendChild(tr);
       });
-    } catch { listEl.innerHTML = '<p class="empty-state" style="color:var(--danger);">Error loading questions.</p>'; }
+    } catch { tbody.innerHTML='<tr><td colspan="6" style="color:var(--danger);font-size:13px;">Error loading questions.</td></tr>'; }
   }
 
-  async function deleteQuestion(testId, qId) {
-    if (!confirm('Delete this question? This cannot be undone.')) return;
-    await window._deleteQuestion(testId, qId);
-    toast('Question deleted.');
-    loadQuestions();
+  async function deleteQ(tid,qid) {
+    if (!confirm('Delete this question?')) return;
+    await window._deleteQuestion(tid,qid); toast('Deleted.'); loadQuestions();
   }
 
+  // ── Create test ──
   async function createTest() {
     const name = document.getElementById('newTestName').value.trim();
     const stat = document.getElementById('testCreateStatus');
-    if (!name) { stat.textContent = 'Assessment name is required.'; return; }
-    stat.textContent = 'Creating...';
+    if (!name) { stat.textContent='Name is required.'; return; }
+    stat.textContent='Creating...';
     try {
-      await window._addTest({
-        name,
-        subject: document.getElementById('newTestSubject').value.trim(),
-        grade:   document.getElementById('newTestGrade').value.trim(),
-        duration_minutes: parseInt(document.getElementById('newTestDuration').value) || null,
-        max_points:       parseInt(document.getElementById('newTestPoints').value) || null,
-        description:      document.getElementById('newTestDesc').value.trim(),
-        status: 'active',
-        created_by: user.base_id
-      });
-      toast('Assessment created.');
-      stat.textContent = '';
-      ['newTestName','newTestSubject','newTestGrade','newTestDuration','newTestPoints','newTestDesc'].forEach(id => document.getElementById(id).value = '');
-      loadAllTests();
-    } catch(e) { stat.textContent = 'Error: ' + e.message; }
+      await window._addTest({ name, subject:document.getElementById('newTestSubject').value.trim(), grade:document.getElementById('newTestGrade').value.trim(), duration_minutes:parseInt(document.getElementById('newTestDuration').value)||null, max_points:parseInt(document.getElementById('newTestPoints').value)||null, description:document.getElementById('newTestDesc').value.trim(), status:'active', created_by:user.base_id });
+      toast('Assessment created.'); stat.textContent='';
+      ['newTestName','newTestSubject','newTestGrade','newTestDuration','newTestPoints','newTestDesc'].forEach(id=>document.getElementById(id).value='');
+      loadAllData();
+    } catch(e) { stat.textContent='Error: '+e.message; }
   }
 
-  function signOut() {
-    sessionStorage.clear();
-    window.location.href = 'index.html';
-  }
+  function signOut() { sessionStorage.clear(); window.location.href='index.html'; }
 
   function toast(msg) {
-    const el = document.getElementById('toast');
-    document.getElementById('toastMsg').textContent = msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 3000);
+    const el=document.getElementById('toast'); document.getElementById('toastMsg').textContent=msg;
+    el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3000);
   }
 </script>
 </body>
