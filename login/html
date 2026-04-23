@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARC Base — Sign In</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    window._arcLogin = async (baseId, password) => {
+      const q    = query(collection(db, "Users"), where("base_id", "==", baseId), where("password", "==", password));
+      const snap = await getDocs(q);
+      if (snap.empty) return null;
+      const d = snap.docs[0];
+      return { id: d.id, ...d.data() };
+    };
+
+    window._arcGetTests = async () => {
+      const snap = await getDocs(collection(db, "Concurrent_Tests"));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    };
+  </script>
+
+  <style>
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 24px 40px;
+    }
+
+    .login-col {
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      margin-bottom: 24px;
+    }
+    .back-link:hover { color: var(--text-secondary); }
+
+    .mode-label {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .login-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow-card);
+    }
+    .login-card h2 { font-size: 1.4rem; margin-bottom: 4px; }
+    .login-card .sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
+
+    .login-form { display: flex; flex-direction: column; gap: 18px; }
+    .btn-login  { width: 100%; padding: 12px; margin-top: 4px; }
+
+    /* User info shown after login */
+    .user-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .user-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-ui);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .user-info-name { font-family: var(--font-ui); font-size: 15px; font-weight: 600; }
+    .user-info-id   { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .user-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .user-field { display: flex; flex-direction: column; gap: 3px; }
+    .user-field .uf-label { font-family: var(--font-ui); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+    .user-field .uf-value { font-family: var(--font-ui); font-size: 13px; color: var(--text-primary); }
+
+    .tests-section-label {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .test-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .test-item:last-child { margin-bottom: 0; }
+    .test-item:hover { border-color: var(--border-active); }
+    .test-item.selected { border-color: var(--accent-blue); background: rgba(43,53,224,0.06); }
+
+    .test-item-name { font-family: var(--font-ui); font-size: 13px; font-weight: 600; }
+    .test-item-id   { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .test-radio {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--border-active);
+      flex-shrink: 0;
+    }
+    .test-item.selected .test-radio {
+      border-color: var(--accent-blue);
+      background: var(--accent-blue);
+    }
+
+    .no-tests { font-family: var(--font-ui); font-size: 12px; color: var(--text-muted); text-align: center; padding: 16px; }
+  </style>
+</head>
+<body>
+
+<div id="arc-loader">
+  <img src="arcbaseLg.png" alt="" class="loader-logo" />
+  <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
+  <span class="loader-text">Please wait</span>
+</div>
+
+<header class="topbar">
+  <img src="arcbaseLg.png" alt="ARC Base" class="topbar-logo" />
+  <img src="arcbaseTxt.png" alt="" class="topbar-wordmark" />
+  <div class="topbar-divider"></div>
+  <span class="topbar-title" id="topbarMode">Sign In</span>
+  <div class="topbar-spacer"></div>
+  <span class="topbar-tag">SECURE SESSION</span>
+</header>
+
+<div class="login-page">
+  <div class="login-col">
+
+    <a href="index.html" class="back-link">&larr; Portal Selection</a>
+
+    <div class="mode-label" id="modeLabel">Test Sign In</div>
+
+    <!-- Login form -->
+    <div class="login-card" id="loginCard">
+      <h2>Sign In</h2>
+      <p class="sub">Enter your Base ID and password to continue.</p>
+
+      <div class="login-form">
+        <div class="form-group">
+          <label class="form-label" for="baseId">Base ID</label>
+          <input class="form-input" type="text" id="baseId" placeholder="Your Base ID" autocomplete="off" spellcheck="false" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-input" type="password" id="password" placeholder="Your password" />
+        </div>
+
+        <div id="loginError" class="alert alert-danger" style="display:none;">
+          <span id="loginErrorMsg">Invalid Base ID or password.</span>
+        </div>
+
+        <button class="btn btn-primary btn-login" id="loginBtn" onclick="doLogin()">Sign In</button>
+      </div>
+    </div>
+
+    <!-- Info card (post-login) -->
+    <div class="login-card" id="infoCard" style="display:none;">
+
+      <div class="user-header">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div style="flex:1;">
+          <div class="user-info-name" id="userName">—</div>
+          <div class="user-info-id" id="userId">—</div>
+        </div>
+        <span class="badge badge-role" id="userRole">—</span>
+      </div>
+
+      <div class="user-details">
+        <div class="user-field">
+          <span class="uf-label">Organization</span>
+          <span class="uf-value" id="userOrg">—</span>
+        </div>
+        <div class="user-field">
+          <span class="uf-label">Grade / Level</span>
+          <span class="uf-value" id="userGrade">—</span>
+        </div>
+        <div class="user-field">
+          <span class="uf-label">Session</span>
+          <span class="uf-value" id="userSession">—</span>
+        </div>
+        <div class="user-field">
+          <span class="uf-label">Status</span>
+          <span class="uf-value"><span class="badge badge-active">Active</span></span>
+        </div>
+      </div>
+
+      <div class="tests-section-label">Available Assessments</div>
+      <div id="testsList"></div>
+
+      <button class="btn btn-primary" id="continueBtn" disabled style="width:100%; margin-top:20px;" onclick="handleContinue()">
+        Continue
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Copyright modal -->
+<div class="modal-overlay" id="copyrightModal" style="display:none;">
+  <div class="modal-box">
+    <h3>Copyright Notice</h3>
+    <div class="divider" style="margin-bottom:20px;"></div>
+    <p style="font-size:12px; line-height:1.9; color:var(--text-secondary); font-family:var(--font-ui);">
+      All material, content, source code, documentation, and associated works included within this testing
+      environment are protected under the Copyright Act of 1976 as codified in Title 17 of the United States Code
+      (17 U.S.C.), specifically including but not limited to §§ 101–122 (Subject Matter and Scope of Copyright),
+      §§ 201–205 (Copyright Ownership and Transfer), §§ 301–305 (Duration of Copyright), §§ 401–412 (Copyright
+      Notice, Deposit, and Registration), and §§ 501–513 (Copyright Infringement and Remedies), as well as all
+      applicable provisions of the Digital Millennium Copyright Act of 1998 (17 U.S.C. §§ 1201–1205). No portion
+      of this material may be copied, reproduced, distributed, transmitted, displayed, published, adapted,
+      modified, reverse engineered, or otherwise used in any form or by any means — whether electronic,
+      mechanical, photocopying, recording, or otherwise — without the prior express written authorization of the
+      copyright holder(s). Unauthorized reproduction or distribution of any protected material contained herein
+      is strictly prohibited and constitutes a violation of federal law, subject to civil penalties including
+      statutory damages of up to $150,000 per work infringed pursuant to 17 U.S.C. § 504(c)(2), as well as
+      criminal prosecution under 17 U.S.C. § 506 and 18 U.S.C. § 2319. All rights not expressly granted are
+      reserved.
+    </p>
+    <div style="margin-top:28px; display:flex; justify-content:flex-end;">
+      <button class="btn btn-primary" onclick="acceptCopyright()">I Acknowledge — Continue</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const mode = urlParams.get('mode') || 'test';
+
+  const modeLabels = {
+    test:     'Test Sign In',
+    admin:    'Administrator Sign In',
+    training: 'Training Sign In',
+    grader:   'Grader Sign In',
+    central:  'Central Administration'
+  };
+
+  document.getElementById('modeLabel').textContent    = modeLabels[mode] || 'Sign In';
+  document.getElementById('topbarMode').textContent   = modeLabels[mode] || 'Sign In';
+
+  window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('arc-loader').classList.add('hidden'), 1400);
+  });
+
+  let currentUser    = null;
+  let selectedTestId = null;
+
+  async function doLogin() {
+    const baseId   = document.getElementById('baseId').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const errEl    = document.getElementById('loginError');
+    const btn      = document.getElementById('loginBtn');
+
+    if (!baseId || !password) {
+      document.getElementById('loginErrorMsg').textContent = 'Both fields are required.';
+      errEl.style.display = 'flex'; return;
+    }
+
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+    errEl.style.display = 'none';
+
+    try {
+      const user = await window._arcLogin(baseId, password);
+      if (!user) {
+        document.getElementById('loginErrorMsg').textContent = 'Invalid Base ID or password.';
+        errEl.style.display = 'flex';
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+        return;
+      }
+
+      currentUser = user;
+      sessionStorage.setItem('arc_user', JSON.stringify(user));
+      sessionStorage.setItem('arc_mode', mode);
+
+      if ((mode === 'admin' || mode === 'central') &&
+          (user.role === 'administrator' || user.role === 'central')) {
+        window.location.href = 'admin.html';
+        return;
+      }
+
+      showUserInfo(user);
+    } catch(e) {
+      document.getElementById('loginErrorMsg').textContent = 'Connection error. Please try again.';
+      errEl.style.display = 'flex';
+      btn.classList.remove('btn-loading');
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  async function showUserInfo(user) {
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('infoCard').style.display  = 'block';
+
+    const initials = ((user.first_name || '')[0] || '') + ((user.last_name || '')[0] || '') || '?';
+    document.getElementById('userAvatar').textContent = initials.toUpperCase();
+    document.getElementById('userName').textContent   =
+      [user.first_name, user.last_name].filter(Boolean).join(' ') || user.base_id;
+    document.getElementById('userId').textContent     = 'Base ID: ' + user.base_id;
+    document.getElementById('userRole').textContent   = (user.role || 'student').charAt(0).toUpperCase() + (user.role || 'student').slice(1);
+    document.getElementById('userOrg').textContent    = user.organization || user.school || '—';
+    document.getElementById('userGrade').textContent  = user.grade || user.level || '—';
+    document.getElementById('userSession').textContent = new Date().toLocaleString();
+
+    const listEl = document.getElementById('testsList');
+    listEl.innerHTML = '<div class="no-tests">Loading...</div>';
+
+    try {
+      const tests = await window._arcGetTests();
+      if (!tests.length) {
+        listEl.innerHTML = '<div class="no-tests">No active assessments at this time.</div>';
+        return;
+      }
+      listEl.innerHTML = '';
+      tests.forEach(test => {
+        const item = document.createElement('div');
+        item.className = 'test-item';
+        item.innerHTML = `
+          <div>
+            <div class="test-item-name">${test.name || test.id}</div>
+            <div class="test-item-id">${test.subject ? test.subject + ' &nbsp;|&nbsp; ' : ''}ID: ${test.id}</div>
+          </div>
+          <div class="test-radio"></div>`;
+        item.addEventListener('click', () => {
+          document.querySelectorAll('.test-item').forEach(el => el.classList.remove('selected'));
+          item.classList.add('selected');
+          selectedTestId = test.id;
+          document.getElementById('continueBtn').disabled = false;
+        });
+        listEl.appendChild(item);
+      });
+    } catch {
+      listEl.innerHTML = '<div class="no-tests">Unable to load assessments.</div>';
+    }
+  }
+
+  function handleContinue() {
+    if (!selectedTestId) return;
+    sessionStorage.setItem('arc_test_id', selectedTestId);
+    if (mode === 'test') {
+      document.getElementById('copyrightModal').style.display = 'flex';
+    } else {
+      window.location.href = 'intro.html';
+    }
+  }
+
+  function acceptCopyright() {
+    document.getElementById('copyrightModal').style.display = 'none';
+    window.location.href = 'intro.html';
+  }
+</script>
+</body>
+</html>
