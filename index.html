@@ -5,139 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARC Base</title>
   <link rel="stylesheet" href="styles.css" />
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+    const firebaseConfig = { apiKey:"YOUR_API_KEY", authDomain:"YOUR_PROJECT.firebaseapp.com", projectId:"YOUR_PROJECT_ID", storageBucket:"YOUR_PROJECT.appspot.com", messagingSenderId:"YOUR_SENDER_ID", appId:"YOUR_APP_ID" };
     initializeApp(firebaseConfig);
   </script>
-
   <style>
-    .home-wrap {
-      max-width: 1060px;
-      margin: 0 auto;
-      padding: 52px 32px 80px;
-    }
-
-    .hero {
-      margin-bottom: 48px;
-    }
-    .hero-eyebrow {
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-    }
-    .hero h1 {
-      font-size: 2rem;
-      color: var(--text-primary);
-      margin-bottom: 10px;
-    }
-    .hero-sub {
-      font-size: 14px;
-      color: var(--text-secondary);
-      max-width: 480px;
-    }
-
-    .section-header {
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .section-header::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
     .portal-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 12px;
-    }
-
-    .portal-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      text-decoration: none;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      cursor: pointer;
+      gap: 0;
     }
-    .portal-card:hover {
-      border-color: var(--border-active);
-      background: var(--bg-elevated);
-    }
-
-    .portal-icon {
-      width: 36px; height: 36px;
-      border-radius: var(--radius);
+    .portal-item {
       display: flex;
       align-items: center;
-      justify-content: center;
-    }
-    .portal-icon svg { width: 18px; height: 18px; }
-    .portal-icon.blue    { background: rgba(43,53,224,0.14);  color: #7b90ff; }
-    .portal-icon.purple  { background: rgba(196,168,245,0.12); color: var(--accent-purple); }
-    .portal-icon.green   { background: rgba(34,201,120,0.1);  color: var(--success); }
-    .portal-icon.warning { background: rgba(240,180,41,0.1);  color: var(--warning); }
-    .portal-icon.red     { background: rgba(232,64,64,0.1);   color: var(--danger); }
-
-    .portal-card-title {
-      font-family: var(--font-ui);
-      font-size: 14px;
-      font-weight: 600;
+      gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
       color: var(--text-primary);
+      background: var(--bg-card);
     }
-    .portal-card-desc {
-      font-size: 13px;
-      color: var(--text-secondary);
-      line-height: 1.6;
+    .portal-item:last-child { border-bottom: none; }
+    .portal-item:hover { background: var(--accent-light); }
+    .portal-item-icon {
+      width: 34px; height: 34px;
+      border-radius: var(--radius);
+      background: var(--accent-light);
+      border: 1px solid #bfdbfe;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent-btn);
     }
-    .portal-card-link {
-      font-family: var(--font-ui);
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-muted);
-      margin-top: auto;
-    }
-
-    .home-footer {
-      margin-top: 60px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .home-footer p {
-      font-family: var(--font-ui);
-      font-size: 11px;
-      color: var(--text-muted);
-    }
+    .portal-item-icon svg { width: 17px; height: 17px; }
+    .portal-item-title { font-size: 13px; font-weight: 600; color: var(--accent-btn); }
+    .portal-item-desc  { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .portal-item-arrow { margin-left: auto; color: var(--text-muted); font-size: 16px; }
   </style>
 </head>
 <body>
@@ -148,103 +52,119 @@
   <span class="loader-text">Please wait</span>
 </div>
 
-<header class="topbar">
-  <img src="arcbaseLg.png" alt="ARC Base" class="topbar-logo" />
-  <img src="arcbaseTxt.png" alt="" class="topbar-wordmark" />
-  <div class="topbar-divider"></div>
-  <span class="topbar-title">Secure Testing Environment</span>
-  <div class="topbar-spacer"></div>
-  <span class="topbar-tag">v1.0</span>
+<header class="site-header">
+  <img src="arcbaseLg.png" alt="" class="site-header-logo" />
+  <img src="arcbaseTxt.png" alt="ARC Base" class="site-header-wordmark" />
+  <div class="site-header-divider"></div>
+  <span class="site-header-title">Secure Testing Environment</span>
+  <div class="site-header-spacer"></div>
+  <span class="site-header-tag">v1.0</span>
 </header>
 
-<main class="page">
-  <div class="home-wrap">
+<div class="page-shell" style="padding: 72px 16px 32px;">
+  <div class="center-box">
 
-    <div class="hero">
-      <p class="hero-eyebrow">ARC Base</p>
-      <h1>Select a Portal</h1>
-      <p class="hero-sub">All sessions are monitored. Proceed only on authorized devices in an authorized testing environment.</p>
+    <div class="box-header">
+      <div class="box-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="box-header-title">ARC Base — Portal Selection</div>
+        <div class="box-header-sub">Select the portal that applies to your role</div>
+      </div>
     </div>
-
-    <div class="section-header">Available Portals</div>
 
     <div class="portal-grid">
 
-      <a href="login.html?mode=test" class="portal-card">
-        <div class="portal-icon blue">
+      <a href="login.html?mode=test" class="portal-item">
+        <div class="portal-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
             <rect x="9" y="3" width="6" height="4" rx="1"/>
             <path d="M9 12l2 2 4-4"/>
           </svg>
         </div>
-        <div class="portal-card-title">Test Sign In</div>
-        <div class="portal-card-desc">Students and examinees: access your assigned assessments. Valid credentials required.</div>
-        <div class="portal-card-link">Sign in &rarr;</div>
+        <div>
+          <div class="portal-item-title">Test Sign In</div>
+          <div class="portal-item-desc">Students and examinees — access your assigned assessment</div>
+        </div>
+        <span class="portal-item-arrow">&#8250;</span>
       </a>
 
-      <a href="login.html?mode=admin" class="portal-card">
-        <div class="portal-icon purple">
+      <a href="login.html?mode=admin" class="portal-item">
+        <div class="portal-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="8" r="4"/>
-            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+            <path d="M21 21v-2a4 4 0 00-3-3.87"/>
           </svg>
         </div>
-        <div class="portal-card-title">Administer Tests</div>
-        <div class="portal-card-desc">Proctor and testing staff: manage active sessions and control test windows.</div>
-        <div class="portal-card-link">Sign in &rarr;</div>
+        <div>
+          <div class="portal-item-title">Administer Tests</div>
+          <div class="portal-item-desc">Proctor and testing staff — manage active test sessions</div>
+        </div>
+        <span class="portal-item-arrow">&#8250;</span>
       </a>
 
-      <a href="login.html?mode=training" class="portal-card">
-        <div class="portal-icon green">
+      <a href="login.html?mode=training" class="portal-item">
+        <div class="portal-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
             <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
           </svg>
         </div>
-        <div class="portal-card-title">Base Training</div>
-        <div class="portal-card-desc">Onboarding and certification training for all platform roles. Practice environment.</div>
-        <div class="portal-card-link">Sign in &rarr;</div>
+        <div>
+          <div class="portal-item-title">Base Training</div>
+          <div class="portal-item-desc">Onboarding and certification training for platform roles</div>
+        </div>
+        <span class="portal-item-arrow">&#8250;</span>
       </a>
 
-      <a href="login.html?mode=grader" class="portal-card">
-        <div class="portal-icon warning">
+      <a href="login.html?mode=grader" class="portal-item">
+        <div class="portal-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
           </svg>
         </div>
-        <div class="portal-card-title">Grader Access</div>
-        <div class="portal-card-desc">Authorized graders: access submitted responses, apply rubrics, and finalize scores.</div>
-        <div class="portal-card-link">Sign in &rarr;</div>
+        <div>
+          <div class="portal-item-title">Grader Access</div>
+          <div class="portal-item-desc">Authorized graders — access submitted responses and rubrics</div>
+        </div>
+        <span class="portal-item-arrow">&#8250;</span>
       </a>
 
-      <a href="login.html?mode=central" class="portal-card">
-        <div class="portal-icon red">
+      <a href="login.html?mode=central" class="portal-item">
+        <div class="portal-item-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2"/>
-            <path d="M7 11V7a5 5 0 0110 0v4"/>
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
           </svg>
         </div>
-        <div class="portal-card-title">Central Administration</div>
-        <div class="portal-card-desc">Central staff and system administrators: full platform control, test authoring, and reporting.</div>
-        <div class="portal-card-link">Sign in &rarr;</div>
+        <div>
+          <div class="portal-item-title">Central Administration</div>
+          <div class="portal-item-desc">System administrators — full platform control and reporting</div>
+        </div>
+        <span class="portal-item-arrow">&#8250;</span>
       </a>
 
     </div>
 
-    <footer class="home-footer">
-      <p>ARC Base Secure Testing Environment &mdash; All sessions logged and monitored</p>
-      <p>Unauthorized access is prohibited under applicable federal law</p>
-    </footer>
-
   </div>
-</main>
+
+  <div class="page-footer">
+    ARC Base Secure Testing Environment &nbsp;&mdash;&nbsp; All sessions are logged and monitored<br>
+    Unauthorized access is prohibited under applicable federal law
+  </div>
+</div>
 
 <script>
   window.addEventListener('load', () => {
-    setTimeout(() => {
-      document.getElementById('arc-loader').classList.add('hidden');
-    }, 1400);
+    setTimeout(() => document.getElementById('arc-loader').classList.add('hidden'), 1200);
   });
 </script>
 </body>
