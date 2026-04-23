@@ -5,129 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARC Base — Assessment Introduction</title>
   <link rel="stylesheet" href="styles.css" />
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-
-    window._getTestInfo = async (testId) => {
-      const snap = await getDoc(doc(db, "Concurrent_Tests", testId));
-      return snap.exists() ? { id: snap.id, ...snap.data() } : null;
-    };
+    const firebaseConfig = { apiKey:"YOUR_API_KEY", authDomain:"YOUR_PROJECT.firebaseapp.com", projectId:"YOUR_PROJECT_ID", storageBucket:"YOUR_PROJECT.appspot.com", messagingSenderId:"YOUR_SENDER_ID", appId:"YOUR_APP_ID" };
+    const db = getFirestore(initializeApp(firebaseConfig));
+    window._getTestInfo = async (id) => { const s=await getDoc(doc(db,"Concurrent_Tests",id)); return s.exists()?{id:s.id,...s.data()}:null; };
   </script>
-
   <style>
-    .intro-wrap {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 48px 32px 80px;
-    }
-
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--font-ui);
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-muted);
-      text-decoration: none;
-      margin-bottom: 28px;
-    }
-    .back-link:hover { color: var(--text-secondary); }
-
-    .eyebrow {
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-    }
-
-    .intro-wrap h1 { font-size: 1.8rem; margin-bottom: 8px; }
-
-    .intro-sub {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 32px;
-    }
-
-    .test-banner {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-active);
-      border-radius: var(--radius-lg);
-      padding: 18px 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-    .test-banner-name { font-family: var(--font-ui); font-size: 15px; font-weight: 600; }
-    .test-banner-meta { display: flex; gap: 24px; flex-wrap: wrap; }
-    .meta-item { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-    .meta-item .ml { font-family: var(--font-ui); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); }
-    .meta-item .mv { font-family: var(--font-ui); font-size: 13px; color: var(--text-primary); }
-
-    .card-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-    .card-section-header {
-      padding: 14px 20px;
+    .meta-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       border-bottom: 1px solid var(--border);
-      font-family: var(--font-ui);
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--text-secondary);
     }
-    .card-section-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+    .meta-cell {
+      padding: 11px 16px;
+      border-right: 1px solid var(--border);
+    }
+    .meta-cell:last-child { border-right: none; }
+    .meta-cell-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 2px; }
+    .meta-cell-value { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
     .instruction-row {
       display: flex;
       align-items: flex-start;
       gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
       font-size: 13px;
       color: var(--text-secondary);
-      line-height: 1.7;
+      line-height: 1.6;
     }
+    .instruction-row:last-child { border-bottom: none; padding-bottom: 0; }
     .instruction-num {
       width: 20px; height: 20px;
       border-radius: 50%;
-      background: rgba(43,53,224,0.14);
-      color: #7b90ff;
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-weight: 700;
+      background: var(--accent-btn);
+      color: #fff;
+      font-size: 10px; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      margin-top: 2px;
+      flex-shrink: 0; margin-top: 1px;
     }
 
     .check-item {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       padding: 10px 0;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
@@ -136,26 +59,42 @@
     .check-item:last-child { border-bottom: none; padding-bottom: 0; }
     .check-box {
       width: 16px; height: 16px;
-      border-radius: 4px;
-      border: 2px solid var(--border-active);
+      border-radius: 3px;
+      border: 2px solid var(--border-dark);
       flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
+      background: #fff;
     }
-    .check-box svg { display: none; width: 9px; height: 9px; color: #fff; }
-    .check-item.checked .check-box { background: var(--accent-blue); border-color: var(--accent-blue); }
+    .check-box svg { display:none; width:9px; height:9px; color:#fff; }
+    .check-item.checked .check-box { background: var(--accent-btn); border-color: var(--accent-btn); }
     .check-item.checked .check-box svg { display: block; }
     .check-item.checked .check-label { color: var(--text-muted); }
-    .check-label { font-size: 13px; color: var(--text-primary); line-height: 1.5; font-family: var(--font-ui); }
+    .check-label { font-size: 13px; color: var(--text-primary); }
 
-    .btn-begin { width: 100%; padding: 13px; margin-top: 8px; }
-
-    .session-info {
-      margin-top: 14px;
-      text-align: center;
-      font-family: var(--font-ui);
+    .box-section {
+      border-bottom: 1px solid var(--border);
+    }
+    .box-section-header {
+      padding: 10px 16px;
+      background: var(--bg-row-alt);
+      border-bottom: 1px solid var(--border);
       font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
       color: var(--text-muted);
     }
+    .box-section-body { padding: 14px 16px; }
+
+    .box-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-row-alt);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .session-note { font-size: 11px; color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -166,36 +105,51 @@
   <span class="loader-text">Please wait</span>
 </div>
 
-<header class="topbar">
-  <img src="arcbaseLg.png" alt="ARC Base" class="topbar-logo" />
-  <img src="arcbaseTxt.png" alt="" class="topbar-wordmark" />
-  <div class="topbar-divider"></div>
-  <span class="topbar-title">Assessment Introduction</span>
-  <div class="topbar-spacer"></div>
-  <span class="topbar-tag" id="sessionTag">—</span>
+<header class="site-header">
+  <img src="arcbaseLg.png" alt="" class="site-header-logo" />
+  <img src="arcbaseTxt.png" alt="ARC Base" class="site-header-wordmark" />
+  <div class="site-header-divider"></div>
+  <span class="site-header-title">Assessment Introduction</span>
+  <div class="site-header-spacer"></div>
+  <span class="site-header-tag" id="sessionTag">—</span>
 </header>
 
-<main class="page">
-  <div class="intro-wrap">
+<div class="page-shell" style="padding: 72px 16px 32px;">
+  <div class="center-box center-box-wide">
 
-    <a href="login.html" class="back-link">&larr; Exit Session</a>
-
-    <p class="eyebrow">Pre-Test Briefing</p>
-    <h1 id="testName">Loading...</h1>
-    <p class="intro-sub" id="testDesc">Please review the instructions below before beginning.</p>
-
-    <div class="test-banner">
-      <div class="test-banner-name" id="bannerName">—</div>
-      <div class="test-banner-meta">
-        <div class="meta-item"><span class="ml">Subject</span><span class="mv" id="bannerSubject">—</span></div>
-        <div class="meta-item"><span class="ml">Duration</span><span class="mv" id="bannerDuration">—</span></div>
-        <div class="meta-item"><span class="ml">Questions</span><span class="mv" id="bannerQuestions">—</span></div>
+    <div class="box-header">
+      <div class="box-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="1"/>
+        </svg>
+      </div>
+      <div>
+        <div class="box-header-title" id="testName">Loading Assessment...</div>
+        <div class="box-header-sub" id="testDesc">Please wait</div>
       </div>
     </div>
 
-    <div class="card-section">
-      <div class="card-section-header">Testing Instructions</div>
-      <div class="card-section-body">
+    <!-- Meta row -->
+    <div class="meta-row">
+      <div class="meta-cell">
+        <div class="meta-cell-label">Subject</div>
+        <div class="meta-cell-value" id="metaSubject">—</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-cell-label">Duration</div>
+        <div class="meta-cell-value" id="metaDuration">—</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-cell-label">Questions</div>
+        <div class="meta-cell-value" id="metaQuestions">—</div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="box-section">
+      <div class="box-section-header">Testing Instructions</div>
+      <div class="box-section-body">
         <div class="instruction-row"><div class="instruction-num">1</div><div>Do not navigate away from the testing window. Leaving the assessment may result in automatic submission or a flag on your record.</div></div>
         <div class="instruction-row"><div class="instruction-num">2</div><div>Unauthorized electronic devices must be stored away. This includes mobile phones, smartwatches, and secondary computers.</div></div>
         <div class="instruction-row"><div class="instruction-num">3</div><div>All responses are saved automatically. Do not close your browser until you have submitted the assessment.</div></div>
@@ -204,9 +158,10 @@
       </div>
     </div>
 
-    <div class="card-section">
-      <div class="card-section-header">Readiness Confirmation</div>
-      <div class="card-section-body" style="gap:0;">
+    <!-- Readiness -->
+    <div class="box-section">
+      <div class="box-section-header">Readiness Confirmation</div>
+      <div class="box-section-body">
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></div>
           <span class="check-label">I have read and understood all testing instructions above.</span>
@@ -222,52 +177,44 @@
       </div>
     </div>
 
-    <button class="btn btn-primary btn-begin" id="beginBtn" disabled onclick="beginTest()">
-      Begin Assessment
-    </button>
-
-    <p class="session-info">Session logged &nbsp;&mdash;&nbsp; <span id="userDisplay">—</span> &nbsp;&mdash;&nbsp; <span id="timeDisplay">—</span></p>
+    <div class="box-footer">
+      <span class="session-note" id="sessionNote">—</span>
+      <button class="btn btn-primary" id="beginBtn" disabled onclick="window.location.href='test.html'">Begin Assessment</button>
+    </div>
 
   </div>
-</main>
+  <div class="page-footer">ARC Base Secure Testing Environment &mdash; All sessions are logged and monitored</div>
+</div>
 
 <script>
-  window.addEventListener('load', () => {
-    setTimeout(() => document.getElementById('arc-loader').classList.add('hidden'), 1400);
-  });
+  window.addEventListener('load', () => setTimeout(() => document.getElementById('arc-loader').classList.add('hidden'), 1200));
 
   const user   = JSON.parse(sessionStorage.getItem('arc_user') || 'null');
   const testId = sessionStorage.getItem('arc_test_id');
   if (!user || !testId) window.location.href = 'index.html';
 
-  document.getElementById('userDisplay').textContent =
-    [user?.first_name, user?.last_name].filter(Boolean).join(' ') || user?.base_id || '—';
-  document.getElementById('timeDisplay').textContent = new Date().toLocaleString();
+  const name = [user?.first_name, user?.last_name].filter(Boolean).join(' ') || user?.base_id || '—';
   document.getElementById('sessionTag').textContent  = user?.base_id || '—';
+  document.getElementById('sessionNote').textContent = name + ' — ' + new Date().toLocaleString();
 
   window.addEventListener('load', async () => {
     try {
       const test = await window._getTestInfo(testId);
       if (test) {
-        document.getElementById('testName').textContent      = test.name || test.id;
-        document.getElementById('testDesc').textContent      = test.description || 'Read all instructions carefully before beginning.';
-        document.getElementById('bannerName').textContent    = test.name || test.id;
-        document.getElementById('bannerSubject').textContent = test.subject || '—';
-        document.getElementById('bannerDuration').textContent = test.duration_minutes ? test.duration_minutes + ' min' : '—';
-        document.getElementById('bannerQuestions').textContent = test.question_count || '—';
+        document.getElementById('testName').textContent     = test.name || test.id;
+        document.getElementById('testDesc').textContent     = test.description || 'Review the instructions below before beginning.';
+        document.getElementById('metaSubject').textContent  = test.subject || '—';
+        document.getElementById('metaDuration').textContent = test.duration_minutes ? test.duration_minutes + ' min' : '—';
+        document.getElementById('metaQuestions').textContent = test.question_count || '—';
       }
     } catch {}
   });
 
   function toggleCheck(el) {
     el.classList.toggle('checked');
-    const all     = document.querySelectorAll('.check-item').length;
+    const all = document.querySelectorAll('.check-item').length;
     const checked = document.querySelectorAll('.check-item.checked').length;
     document.getElementById('beginBtn').disabled = (checked < all);
-  }
-
-  function beginTest() {
-    window.location.href = 'test.html';
   }
 </script>
 </body>
