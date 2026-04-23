@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARC Base — Assessment Introduction</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    window._getTestInfo = async (testId) => {
+      const snap = await getDoc(doc(db, "Concurrent_Tests", testId));
+      return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+    };
+  </script>
+
+  <style>
+    .intro-wrap {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      margin-bottom: 28px;
+    }
+    .back-link:hover { color: var(--text-secondary); }
+
+    .eyebrow {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .intro-wrap h1 { font-size: 1.8rem; margin-bottom: 8px; }
+
+    .intro-sub {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .test-banner {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius-lg);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .test-banner-name { font-family: var(--font-ui); font-size: 15px; font-weight: 600; }
+    .test-banner-meta { display: flex; gap: 24px; flex-wrap: wrap; }
+    .meta-item { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .meta-item .ml { font-family: var(--font-ui); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); }
+    .meta-item .mv { font-family: var(--font-ui); font-size: 13px; color: var(--text-primary); }
+
+    .card-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .card-section-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-secondary);
+    }
+    .card-section-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+    .instruction-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .instruction-num {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(43,53,224,0.14);
+      color: #7b90ff;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+    .check-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .check-box {
+      width: 16px; height: 16px;
+      border-radius: 4px;
+      border: 2px solid var(--border-active);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .check-box svg { display: none; width: 9px; height: 9px; color: #fff; }
+    .check-item.checked .check-box { background: var(--accent-blue); border-color: var(--accent-blue); }
+    .check-item.checked .check-box svg { display: block; }
+    .check-item.checked .check-label { color: var(--text-muted); }
+    .check-label { font-size: 13px; color: var(--text-primary); line-height: 1.5; font-family: var(--font-ui); }
+
+    .btn-begin { width: 100%; padding: 13px; margin-top: 8px; }
+
+    .session-info {
+      margin-top: 14px;
+      text-align: center;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<div id="arc-loader">
+  <img src="arcbaseLg.png" alt="" class="loader-logo" />
+  <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
+  <span class="loader-text">Please wait</span>
+</div>
+
+<header class="topbar">
+  <img src="arcbaseLg.png" alt="ARC Base" class="topbar-logo" />
+  <img src="arcbaseTxt.png" alt="" class="topbar-wordmark" />
+  <div class="topbar-divider"></div>
+  <span class="topbar-title">Assessment Introduction</span>
+  <div class="topbar-spacer"></div>
+  <span class="topbar-tag" id="sessionTag">—</span>
+</header>
+
+<main class="page">
+  <div class="intro-wrap">
+
+    <a href="login.html" class="back-link">&larr; Exit Session</a>
+
+    <p class="eyebrow">Pre-Test Briefing</p>
+    <h1 id="testName">Loading...</h1>
+    <p class="intro-sub" id="testDesc">Please review the instructions below before beginning.</p>
+
+    <div class="test-banner">
+      <div class="test-banner-name" id="bannerName">—</div>
+      <div class="test-banner-meta">
+        <div class="meta-item"><span class="ml">Subject</span><span class="mv" id="bannerSubject">—</span></div>
+        <div class="meta-item"><span class="ml">Duration</span><span class="mv" id="bannerDuration">—</span></div>
+        <div class="meta-item"><span class="ml">Questions</span><span class="mv" id="bannerQuestions">—</span></div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="card-section-header">Testing Instructions</div>
+      <div class="card-section-body">
+        <div class="instruction-row"><div class="instruction-num">1</div><div>Do not navigate away from the testing window. Leaving the assessment may result in automatic submission or a flag on your record.</div></div>
+        <div class="instruction-row"><div class="instruction-num">2</div><div>Unauthorized electronic devices must be stored away. This includes mobile phones, smartwatches, and secondary computers.</div></div>
+        <div class="instruction-row"><div class="instruction-num">3</div><div>All responses are saved automatically. Do not close your browser until you have submitted the assessment.</div></div>
+        <div class="instruction-row"><div class="instruction-num">4</div><div>If you experience a technical issue, notify your proctor immediately. Do not attempt to refresh or restart independently.</div></div>
+        <div class="instruction-row"><div class="instruction-num">5</div><div>Academic dishonesty in any form is strictly prohibited and subject to disciplinary action under applicable institutional policy.</div></div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="card-section-header">Readiness Confirmation</div>
+      <div class="card-section-body" style="gap:0;">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></div>
+          <span class="check-label">I have read and understood all testing instructions above.</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></div>
+          <span class="check-label">All unauthorized electronic devices are stored away.</span>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></div>
+          <span class="check-label">I am ready to begin and have received authorization from my proctor.</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-begin" id="beginBtn" disabled onclick="beginTest()">
+      Begin Assessment
+    </button>
+
+    <p class="session-info">Session logged &nbsp;&mdash;&nbsp; <span id="userDisplay">—</span> &nbsp;&mdash;&nbsp; <span id="timeDisplay">—</span></p>
+
+  </div>
+</main>
+
+<script>
+  window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('arc-loader').classList.add('hidden'), 1400);
+  });
+
+  const user   = JSON.parse(sessionStorage.getItem('arc_user') || 'null');
+  const testId = sessionStorage.getItem('arc_test_id');
+  if (!user || !testId) window.location.href = 'index.html';
+
+  document.getElementById('userDisplay').textContent =
+    [user?.first_name, user?.last_name].filter(Boolean).join(' ') || user?.base_id || '—';
+  document.getElementById('timeDisplay').textContent = new Date().toLocaleString();
+  document.getElementById('sessionTag').textContent  = user?.base_id || '—';
+
+  window.addEventListener('load', async () => {
+    try {
+      const test = await window._getTestInfo(testId);
+      if (test) {
+        document.getElementById('testName').textContent      = test.name || test.id;
+        document.getElementById('testDesc').textContent      = test.description || 'Read all instructions carefully before beginning.';
+        document.getElementById('bannerName').textContent    = test.name || test.id;
+        document.getElementById('bannerSubject').textContent = test.subject || '—';
+        document.getElementById('bannerDuration').textContent = test.duration_minutes ? test.duration_minutes + ' min' : '—';
+        document.getElementById('bannerQuestions').textContent = test.question_count || '—';
+      }
+    } catch {}
+  });
+
+  function toggleCheck(el) {
+    el.classList.toggle('checked');
+    const all     = document.querySelectorAll('.check-item').length;
+    const checked = document.querySelectorAll('.check-item.checked').length;
+    document.getElementById('beginBtn').disabled = (checked < all);
+  }
+
+  function beginTest() {
+    window.location.href = 'test.html';
+  }
+</script>
+</body>
+</html>
