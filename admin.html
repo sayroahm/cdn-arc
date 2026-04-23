@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARC Base — Administration</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, doc, deleteDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    window._addQuestion   = async (testId, data) => addDoc(collection(db, "Concurrent_Tests", testId, "Questions"), { ...data, created_at: serverTimestamp() });
+    window._getQuestions  = async (testId) => { const s = await getDocs(collection(db, "Concurrent_Tests", testId, "Questions")); return s.docs.map(d => ({ id: d.id, ...d.data() })); };
+    window._deleteQuestion= async (testId, qId) => deleteDoc(doc(db, "Concurrent_Tests", testId, "Questions", qId));
+    window._getTests      = async () => { const s = await getDocs(collection(db, "Concurrent_Tests")); return s.docs.map(d => ({ id: d.id, ...d.data() })); };
+    window._addTest       = async (data) => addDoc(collection(db, "Concurrent_Tests"), { ...data, created_at: serverTimestamp() });
+  </script>
+
+  <style>
+    .admin-layout { display: flex; min-height: 100vh; padding-top: 54px; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      flex-shrink: 0;
+      position: sticky;
+      top: 54px;
+      height: calc(100vh - 54px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-group-label {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 0 16px;
+      margin: 16px 0 6px;
+    }
+    .sidebar-group-label:first-child { margin-top: 0; }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-left: 2px solid transparent;
+    }
+    .sidebar-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+    .sidebar-item.active { color: var(--text-primary); border-left-color: var(--accent-blue); background: rgba(43,53,224,0.06); }
+    .sidebar-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    .sidebar-spacer { flex: 1; }
+    .sidebar-user {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .sidebar-user-name { font-family: var(--font-ui); font-size: 13px; font-weight: 500; }
+    .sidebar-user-role { font-family: var(--font-ui); font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+
+    /* Main */
+    .admin-main { flex: 1; padding: 32px 36px; overflow-y: auto; position: relative; z-index: 1; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .page-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-heading h2 { font-size: 1.4rem; }
+    .page-heading .subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 3px; font-family: var(--font-ui); }
+
+    /* Stats */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+    .stat-label { font-family: var(--font-ui); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 6px; }
+    .stat-value { font-family: var(--font-ui); font-size: 1.6rem; font-weight: 700; }
+    .stat-value.sm { font-size: 13px; padding-top: 6px; }
+
+    /* Builder */
+    .section-label {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin: 28px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .span-2 { grid-column: 1 / -1; }
+    textarea.form-input { resize: vertical; min-height: 90px; }
+
+    .type-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+      width: fit-content;
+      margin-bottom: 20px;
+    }
+    .type-tab {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-muted);
+      border: none;
+      background: none;
+    }
+    .type-tab.active { background: var(--bg-elevated); color: var(--text-primary); }
+
+    .choices-list { display: flex; flex-direction: column; gap: 8px; }
+    .choice-row { display: flex; align-items: center; gap: 8px; }
+    .choice-letter {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-active);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-ui); font-size: 11px; font-weight: 700; color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .correct-toggle {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid var(--border-active);
+      background: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .correct-toggle.correct { background: var(--success); border-color: var(--success); }
+    .correct-toggle svg { width: 10px; height: 10px; color: #fff; display: none; }
+    .correct-toggle.correct svg { display: block; }
+
+    /* Question list */
+    .q-list { display: flex; flex-direction: column; gap: 8px; }
+    .q-row {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .q-num { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); min-width: 22px; padding-top: 2px; }
+    .q-body { flex: 1; }
+    .q-text { font-size: 13px; line-height: 1.6; margin-bottom: 6px; }
+    .q-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .q-tag {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+    .btn-icon {
+      width: 30px; height: 30px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .btn-icon:hover { color: var(--danger); border-color: rgba(232,64,64,0.35); background: rgba(232,64,64,0.06); }
+    .btn-icon svg { width: 13px; height: 13px; }
+
+    .test-selector-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .test-selector-row .form-group { min-width: 280px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 10px;
+      transform: translateY(80px);
+      opacity: 0;
+      z-index: 999;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+
+    .new-test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 640px; }
+    .new-test-grid .span-2 { grid-column: 1/-1; }
+
+    .empty-state {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 16px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div id="arc-loader">
+  <img src="arcbaseLg.png" alt="" class="loader-logo" />
+  <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
+  <span class="loader-text">Please wait</span>
+</div>
+
+<header class="topbar">
+  <img src="arcbaseLg.png" alt="ARC Base" class="topbar-logo" />
+  <img src="arcbaseTxt.png" alt="" class="topbar-wordmark" />
+  <div class="topbar-divider"></div>
+  <span class="topbar-title">Administration Panel</span>
+  <div class="topbar-spacer"></div>
+  <span class="topbar-tag" id="adminRoleTag">—</span>
+</header>
+
+<div class="admin-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-group-label">Overview</div>
+    <div class="sidebar-item active" onclick="switchPanel('dashboard', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      Dashboard
+    </div>
+
+    <div class="sidebar-group-label">Assessments</div>
+    <div class="sidebar-item" onclick="switchPanel('questions', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
+      </svg>
+      Question Builder
+    </div>
+    <div class="sidebar-item" onclick="switchPanel('tests', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      Manage Tests
+    </div>
+
+    <div class="sidebar-group-label">Account</div>
+    <div class="sidebar-item" onclick="signOut()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Sign Out
+    </div>
+
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebarName">—</div>
+        <div class="sidebar-user-role" id="sidebarRole">—</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+
+    <!-- Dashboard -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="page-heading">
+        <div>
+          <h2>Dashboard</h2>
+          <p class="subtitle">Platform overview</p>
+        </div>
+        <span class="badge badge-active">Online</span>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Active Tests</div>
+          <div class="stat-value" id="statTests">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Signed In As</div>
+          <div class="stat-value sm" id="statAdmin">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Session Start</div>
+          <div class="stat-value sm" id="statSession">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Role</div>
+          <div class="stat-value sm" id="statRole">—</div>
+        </div>
+      </div>
+
+      <div class="card" style="max-width:520px;">
+        <h4 style="margin-bottom:14px; font-family:var(--font-ui);">Quick Actions</h4>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="switchPanel('questions', document.querySelectorAll('.sidebar-item')[2])">
+            Add Questions to a Test
+          </button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="switchPanel('tests', document.querySelectorAll('.sidebar-item')[3])">
+            Create a New Assessment
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Builder -->
+    <div class="panel" id="panel-questions">
+      <div class="page-heading">
+        <div>
+          <h2>Question Builder</h2>
+          <p class="subtitle">Author and manage test questions</p>
+        </div>
+      </div>
+
+      <div class="test-selector-row">
+        <div class="form-group">
+          <label class="form-label">Assessment</label>
+          <select class="form-input" id="qTestSelect" onchange="loadQuestions()">
+            <option value="">Select an assessment...</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost" onclick="loadQuestions()" id="refreshBtn">Refresh</button>
+      </div>
+
+      <div class="type-tabs">
+        <button class="type-tab active" onclick="setQType('multiple_choice', this)">Multiple Choice</button>
+        <button class="type-tab" onclick="setQType('short_answer', this)">Short Answer</button>
+        <button class="type-tab" onclick="setQType('true_false', this)">True / False</button>
+        <button class="type-tab" onclick="setQType('essay', this)">Essay</button>
+      </div>
+
+      <div class="card" style="max-width:760px;">
+        <h4 style="font-family:var(--font-ui); margin-bottom:18px;">New Question</h4>
+
+        <div class="builder-grid">
+          <div class="form-group span-2">
+            <label class="form-label">Question Text</label>
+            <textarea class="form-input" id="qText" placeholder="Enter the question..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Standard</label>
+            <input class="form-input" type="text" id="qStandard" placeholder="e.g. CCSS.MATH.7.RP.A.1" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Difficulty</label>
+            <select class="form-input" id="qDifficulty">
+              <option value="basic">Basic</option>
+              <option value="intermediate" selected>Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="critical">Critical Thinking</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Points</label>
+            <input class="form-input" type="number" id="qPoints" value="1" min="1" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Time Limit (sec, 0 = none)</label>
+            <input class="form-input" type="number" id="qTimeLimit" value="0" min="0" />
+          </div>
+
+          <!-- Multiple choice -->
+          <div class="form-group span-2" id="choicesSection">
+            <label class="form-label">Answer Choices — Click circle to mark correct</label>
+            <div class="choices-list">
+              <div class="choice-row">
+                <div class="choice-letter">A</div>
+                <input class="form-input" type="text" id="choiceInputA" placeholder="Choice A" />
+                <button class="correct-toggle" onclick="setCorrect('A', this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button>
+              </div>
+              <div class="choice-row">
+                <div class="choice-letter">B</div>
+                <input class="form-input" type="text" id="choiceInputB" placeholder="Choice B" />
+                <button class="correct-toggle" onclick="setCorrect('B', this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button>
+              </div>
+              <div class="choice-row">
+                <div class="choice-letter">C</div>
+                <input class="form-input" type="text" id="choiceInputC" placeholder="Choice C" />
+                <button class="correct-toggle" onclick="setCorrect('C', this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button>
+              </div>
+              <div class="choice-row">
+                <div class="choice-letter">D</div>
+                <input class="form-input" type="text" id="choiceInputD" placeholder="Choice D" />
+                <button class="correct-toggle" onclick="setCorrect('D', this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,6 4,9 11,2"/></svg></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Short answer / essay -->
+          <div class="form-group span-2" id="answerSection" style="display:none;">
+            <label class="form-label">Expected Answer / Rubric Key</label>
+            <textarea class="form-input" id="qAnswer" placeholder="Rubric or correct answer..." style="min-height:70px;"></textarea>
+          </div>
+
+          <!-- True / False -->
+          <div class="form-group span-2" id="tfSection" style="display:none;">
+            <label class="form-label">Correct Answer</label>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-ghost" id="tfTrue" onclick="selectTF('true')">True</button>
+              <button class="btn btn-ghost" id="tfFalse" onclick="selectTF('false')">False</button>
+            </div>
+          </div>
+
+          <div class="form-group span-2">
+            <label class="form-label">Feedback (shown after submission)</label>
+            <input class="form-input" type="text" id="qFeedback" placeholder="Optional: explain the correct answer..." />
+          </div>
+        </div>
+
+        <div style="margin-top:20px; display:flex; gap:10px; align-items:center;">
+          <button class="btn btn-primary" onclick="submitQuestion()" id="submitQBtn">Add Question</button>
+          <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+          <span id="submitStatus" style="font-family:var(--font-ui); font-size:12px; color:var(--text-muted);"></span>
+        </div>
+      </div>
+
+      <div class="section-label">Existing Questions</div>
+      <div class="q-list" id="questionsList">
+        <p class="empty-state">Select an assessment to view its questions.</p>
+      </div>
+    </div>
+
+    <!-- Manage Tests -->
+    <div class="panel" id="panel-tests">
+      <div class="page-heading">
+        <div>
+          <h2>Manage Tests</h2>
+          <p class="subtitle">Create and manage concurrent assessments</p>
+        </div>
+      </div>
+
+      <div class="card" style="max-width:660px; margin-bottom:28px;">
+        <h4 style="font-family:var(--font-ui); margin-bottom:18px;">New Assessment</h4>
+        <div class="new-test-grid">
+          <div class="form-group span-2">
+            <label class="form-label">Assessment Name</label>
+            <input class="form-input" type="text" id="newTestName" placeholder="e.g. Unit 3 Algebra Assessment" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input class="form-input" type="text" id="newTestSubject" placeholder="e.g. Mathematics" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Grade Level</label>
+            <input class="form-input" type="text" id="newTestGrade" placeholder="e.g. Grade 8" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (minutes)</label>
+            <input class="form-input" type="number" id="newTestDuration" placeholder="60" min="1" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maximum Points</label>
+            <input class="form-input" type="number" id="newTestPoints" placeholder="100" min="1" />
+          </div>
+          <div class="form-group span-2">
+            <label class="form-label">Description</label>
+            <input class="form-input" type="text" id="newTestDesc" placeholder="Brief description..." />
+          </div>
+        </div>
+        <div style="margin-top:18px; display:flex; gap:10px; align-items:center;">
+          <button class="btn btn-primary" onclick="createTest()">Create Assessment</button>
+          <span id="testCreateStatus" style="font-family:var(--font-ui); font-size:12px; color:var(--text-muted);"></span>
+        </div>
+      </div>
+
+      <div class="section-label">Active Assessments</div>
+      <div class="q-list" id="testsList">
+        <p class="empty-state">Loading...</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toastMsg">Saved.</span>
+</div>
+
+<script>
+  const user = JSON.parse(sessionStorage.getItem('arc_user') || 'null');
+  if (!user || (user.role !== 'administrator' && user.role !== 'central')) {
+    window.location.href = 'index.html';
+  }
+
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('arc-loader').classList.add('hidden');
+      initPage();
+    }, 1400);
+  });
+
+  function initPage() {
+    const initials = ((user.first_name || '')[0] || '') + ((user.last_name || '')[0] || '') || '?';
+    const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.base_id;
+
+    document.getElementById('sidebarAvatar').textContent = initials.toUpperCase();
+    document.getElementById('sidebarName').textContent   = fullName;
+    document.getElementById('sidebarRole').textContent   = user.role;
+    document.getElementById('adminRoleTag').textContent  = user.role.toUpperCase() + ' — ' + (user.base_id || '—');
+    document.getElementById('statAdmin').textContent     = fullName;
+    document.getElementById('statSession').textContent   = new Date().toLocaleTimeString();
+    document.getElementById('statRole').textContent      = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+
+    loadAllTests();
+  }
+
+  function switchPanel(id, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    if (el) el.classList.add('active');
+  }
+
+  let currentQType = 'multiple_choice';
+  let correctAnswer = null;
+
+  function setQType(type, btn) {
+    currentQType = type; correctAnswer = null;
+    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('choicesSection').style.display = (type === 'multiple_choice') ? 'flex' : 'none';
+    document.getElementById('answerSection').style.display  = (type === 'short_answer' || type === 'essay') ? 'flex' : 'none';
+    document.getElementById('tfSection').style.display      = (type === 'true_false') ? 'flex' : 'none';
+  }
+
+  function setCorrect(letter, btn) {
+    document.querySelectorAll('.correct-toggle').forEach(t => t.classList.remove('correct'));
+    btn.classList.add('correct'); correctAnswer = letter;
+  }
+
+  let tfAnswer = null;
+  function selectTF(val) {
+    tfAnswer = val;
+    document.getElementById('tfTrue').style.background  = val === 'true'  ? 'rgba(34,201,120,0.12)' : '';
+    document.getElementById('tfFalse').style.background = val === 'false' ? 'rgba(232,64,64,0.12)'  : '';
+  }
+
+  async function submitQuestion() {
+    const testId = document.getElementById('qTestSelect').value;
+    const qText  = document.getElementById('qText').value.trim();
+    const status = document.getElementById('submitStatus');
+    if (!testId) { status.textContent = 'Select an assessment first.'; return; }
+    if (!qText)  { status.textContent = 'Question text is required.'; return; }
+
+    const btn = document.getElementById('submitQBtn');
+    btn.classList.add('btn-loading'); btn.disabled = true;
+    status.textContent = '';
+
+    const data = {
+      type: currentQType,
+      text: qText,
+      standard:   document.getElementById('qStandard').value.trim(),
+      difficulty: document.getElementById('qDifficulty').value,
+      points:     parseInt(document.getElementById('qPoints').value) || 1,
+      time_limit: parseInt(document.getElementById('qTimeLimit').value) || 0,
+      feedback:   document.getElementById('qFeedback').value.trim()
+    };
+
+    if (currentQType === 'multiple_choice') {
+      data.choices = { A: document.getElementById('choiceInputA').value.trim(), B: document.getElementById('choiceInputB').value.trim(), C: document.getElementById('choiceInputC').value.trim(), D: document.getElementById('choiceInputD').value.trim() };
+      data.correct_answer = correctAnswer;
+    } else if (currentQType === 'true_false') {
+      data.correct_answer = tfAnswer;
+    } else {
+      data.answer_key = document.getElementById('qAnswer').value.trim();
+    }
+
+    try {
+      await window._addQuestion(testId, data);
+      toast('Question saved.');
+      clearForm();
+      loadQuestions();
+    } catch(e) {
+      status.textContent = 'Error: ' + e.message;
+    }
+    btn.classList.remove('btn-loading'); btn.disabled = false;
+  }
+
+  function clearForm() {
+    document.getElementById('qText').value = '';
+    document.getElementById('qStandard').value = '';
+    document.getElementById('qFeedback').value = '';
+    document.getElementById('qPoints').value = '1';
+    document.getElementById('qTimeLimit').value = '0';
+    document.getElementById('qAnswer').value = '';
+    ['A','B','C','D'].forEach(l => document.getElementById('choiceInput' + l).value = '');
+    document.querySelectorAll('.correct-toggle').forEach(t => t.classList.remove('correct'));
+    correctAnswer = null; tfAnswer = null;
+    document.getElementById('submitStatus').textContent = '';
+  }
+
+  async function loadAllTests() {
+    const tests = await window._getTests().catch(() => []);
+    document.getElementById('statTests').textContent = tests.length;
+
+    const sel = document.getElementById('qTestSelect');
+    sel.innerHTML = '<option value="">Select an assessment...</option>';
+    tests.forEach(t => {
+      const o = document.createElement('option');
+      o.value = t.id;
+      o.textContent = (t.name || t.id) + (t.subject ? ' — ' + t.subject : '');
+      sel.appendChild(o);
+    });
+
+    const listEl = document.getElementById('testsList');
+    if (!tests.length) { listEl.innerHTML = '<p class="empty-state">No assessments found.</p>'; return; }
+    listEl.innerHTML = '';
+    tests.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'q-row';
+      row.innerHTML = `
+        <div class="q-body">
+          <div class="q-text" style="font-weight:600; font-family:var(--font-ui);">${t.name || t.id}</div>
+          <div class="q-meta">
+            ${t.subject ? '<span class="q-tag">' + t.subject + '</span>' : ''}
+            ${t.grade ? '<span class="q-tag">' + t.grade + '</span>' : ''}
+            ${t.duration_minutes ? '<span class="q-tag">' + t.duration_minutes + ' min</span>' : ''}
+            <span class="q-tag">ID: ${t.id}</span>
+          </div>
+        </div>`;
+      listEl.appendChild(row);
+    });
+  }
+
+  async function loadQuestions() {
+    const testId = document.getElementById('qTestSelect').value;
+    const listEl = document.getElementById('questionsList');
+    if (!testId) { listEl.innerHTML = '<p class="empty-state">Select an assessment to view questions.</p>'; return; }
+
+    listEl.innerHTML = '<p class="empty-state">Loading...</p>';
+    try {
+      const qs = await window._getQuestions(testId);
+      if (!qs.length) { listEl.innerHTML = '<p class="empty-state">No questions yet for this assessment.</p>'; return; }
+      listEl.innerHTML = '';
+      qs.forEach((q, i) => {
+        const row = document.createElement('div');
+        row.className = 'q-row';
+        row.innerHTML = `
+          <div class="q-num">${String(i+1).padStart(2,'0')}</div>
+          <div class="q-body">
+            <div class="q-text">${q.text}</div>
+            <div class="q-meta">
+              <span class="q-tag">${(q.type || '').replace('_',' ')}</span>
+              <span class="q-tag">${q.points || 1} pts</span>
+              ${q.difficulty ? '<span class="q-tag">' + q.difficulty + '</span>' : ''}
+              ${q.standard ? '<span class="q-tag">' + q.standard + '</span>' : ''}
+            </div>
+          </div>
+          <button class="btn-icon" onclick="deleteQuestion('${testId}','${q.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14H6L5 6"/>
+            </svg>
+          </button>`;
+        listEl.appendChild(row);
+      });
+    } catch { listEl.innerHTML = '<p class="empty-state" style="color:var(--danger);">Error loading questions.</p>'; }
+  }
+
+  async function deleteQuestion(testId, qId) {
+    if (!confirm('Delete this question? This cannot be undone.')) return;
+    await window._deleteQuestion(testId, qId);
+    toast('Question deleted.');
+    loadQuestions();
+  }
+
+  async function createTest() {
+    const name = document.getElementById('newTestName').value.trim();
+    const stat = document.getElementById('testCreateStatus');
+    if (!name) { stat.textContent = 'Assessment name is required.'; return; }
+    stat.textContent = 'Creating...';
+    try {
+      await window._addTest({
+        name,
+        subject: document.getElementById('newTestSubject').value.trim(),
+        grade:   document.getElementById('newTestGrade').value.trim(),
+        duration_minutes: parseInt(document.getElementById('newTestDuration').value) || null,
+        max_points:       parseInt(document.getElementById('newTestPoints').value) || null,
+        description:      document.getElementById('newTestDesc').value.trim(),
+        status: 'active',
+        created_by: user.base_id
+      });
+      toast('Assessment created.');
+      stat.textContent = '';
+      ['newTestName','newTestSubject','newTestGrade','newTestDuration','newTestPoints','newTestDesc'].forEach(id => document.getElementById(id).value = '');
+      loadAllTests();
+    } catch(e) { stat.textContent = 'Error: ' + e.message; }
+  }
+
+  function signOut() {
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  }
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
